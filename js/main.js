@@ -8,6 +8,9 @@ let notes = [
     { id: 3, bookId: 1, title: "Terza Nota", content: "La terza nota contiene informazioni importanti sul progetto.", color: 0xf5a442, orbit: { radius: 9, speed: 0.0008, angle: 4 } }
 ];
 
+
+
+
 // Inizializzazione della scena
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0a1a);
@@ -41,6 +44,173 @@ let isDragging = false;
 let isShiftDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 let cameraTarget = new THREE.Vector3(0, 0, 0);
+
+// per lo sfondo stellato 
+let starsBackground; 
+let starfieldEnabled = false;
+
+const createStarfieldToggle = ()=> {
+	  const toggleContainer = document.createElement('div');
+    toggleContainer.className = 'starfield-toggle';
+    toggleContainer.style.position = 'absolute';
+    toggleContainer.style.top = '20px';
+    toggleContainer.style.right = '20px';
+    toggleContainer.style.zIndex = '100';
+    toggleContainer.style.display = 'flex';
+    toggleContainer.style.alignItems = 'center';
+    toggleContainer.style.background = 'rgba(0, 0, 0, 0.5)';
+    toggleContainer.style.padding = '5px 10px';
+    toggleContainer.style.borderRadius = '20px';
+    toggleContainer.style.color = 'white';
+    
+    const label = document.createElement('label');
+    label.textContent = 'Stelle';
+    label.style.marginRight = '10px';
+    label.style.fontSize = '14px';
+    
+    const toggleSwitch = document.createElement('div');
+    toggleSwitch.className = 'toggle-switch';
+    toggleSwitch.style.position = 'relative';
+    toggleSwitch.style.width = '40px';
+    toggleSwitch.style.height = '20px';
+    toggleSwitch.style.backgroundColor = '#ccc';
+    toggleSwitch.style.borderRadius = '20px';
+    toggleSwitch.style.cursor = 'pointer';
+    toggleSwitch.style.transition = 'background-color 0.3s';
+    
+    const toggleSlider = document.createElement('div');
+    toggleSlider.className = 'toggle-slider';
+    toggleSlider.style.position = 'absolute';
+    toggleSlider.style.width = '16px';
+    toggleSlider.style.height = '16px';
+    toggleSlider.style.left = '2px';
+    toggleSlider.style.top = '2px';
+    toggleSlider.style.backgroundColor = 'white';
+    toggleSlider.style.borderRadius = '50%';
+    toggleSlider.style.transition = 'transform 0.3s';
+    
+    toggleSwitch.appendChild(toggleSlider);
+    toggleContainer.appendChild(label);
+    toggleContainer.appendChild(toggleSwitch);
+    document.body.appendChild(toggleContainer);
+    
+    toggleSwitch.addEventListener('click', function() {
+        starfieldEnabled = !starfieldEnabled;
+        
+        if (starfieldEnabled) {
+            // Attiva sfondo stellato
+            toggleSwitch.style.backgroundColor = '#4287f5';
+            toggleSlider.style.transform = 'translateX(20px)';
+            
+            if (!starsBackground) {
+                createStarfield();
+            } else {
+                starsBackground.visible = true;
+            }
+        } else {
+            // Disattiva sfondo stellato
+            toggleSwitch.style.backgroundColor = '#ccc';
+            toggleSlider.style.transform = 'translateX(0)';
+            
+            if (starsBackground) {
+                starsBackground.visible = false;
+            }
+        }
+    });
+}
+// Crea lo sfondo stellato
+function createStarfield() {
+    // Crea un nuovo gruppo per contenere le stelle
+    starsBackground = new THREE.Group();
+    
+    // Crea geometria per le stelle (particelle)
+    const starsGeometry = new THREE.BufferGeometry();
+    const starCount = 1500; // Numero di stelle (regolato per le performance)
+    
+    // Posizioni delle stelle (3 valori per stella: x, y, z)
+    const positions = new Float32Array(starCount * 3);
+    const sizes = new Float32Array(starCount);
+    
+    // Distribuisci le stelle in una sfera attorno alla scena
+    for (let i = 0; i < starCount; i++) {
+        // Posizione
+        const i3 = i * 3;
+        
+        // Coordiante sferiche per distribuzione uniforme
+        const radius = 100 + Math.random() * 50; // Distanza dal centro
+        const theta = Math.random() * Math.PI * 2; // Angolo orizzontale
+        const phi = Math.random() * Math.PI; // Angolo verticale
+        
+        // Converti coordinate sferiche in cartesiane
+        positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+        positions[i3 + 1] = radius * Math.cos(phi);
+        positions[i3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+        
+        // Dimensione della stella (variabile)
+        sizes[i] = Math.random() * 2 + 0.5;
+    }
+    
+    starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    starsGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    
+    // Materiale che renderà le stelle come punti luminosi
+    const starsMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.7,
+        transparent: true,
+        opacity: 0.8,
+        sizeAttenuation: true // Le stelle più lontane appaiono più piccole
+    });
+    
+    // Crea le stelle (sistema di particelle)
+    const starPoints = new THREE.Points(starsGeometry, starsMaterial);
+    starsBackground.add(starPoints);
+    
+    // Aggiungi alla scena
+    scene.add(starsBackground);
+    
+    // Crea stelle più luminose (più rare)
+    const brightStarsGeometry = new THREE.BufferGeometry();
+    const brightStarCount = 100;
+    
+    const brightPositions = new Float32Array(brightStarCount * 3);
+    const brightSizes = new Float32Array(brightStarCount);
+    
+    for (let i = 0; i < brightStarCount; i++) {
+        const i3 = i * 3;
+        
+        // Stessa logica di distribuzione
+        const radius = 90 + Math.random() * 60;
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.random() * Math.PI;
+        
+        brightPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+        brightPositions[i3 + 1] = radius * Math.cos(phi);
+        brightPositions[i3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+        
+        // Stelle più grandi
+        brightSizes[i] = Math.random() * 3 + 1.5;
+    }
+    
+    brightStarsGeometry.setAttribute('position', new THREE.BufferAttribute(brightPositions, 3));
+    brightStarsGeometry.setAttribute('size', new THREE.BufferAttribute(brightSizes, 1));
+    
+    const brightStarsMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 1.5,
+        transparent: true,
+        opacity: 0.9,
+        sizeAttenuation: true
+    });
+    
+    const brightStarPoints = new THREE.Points(brightStarsGeometry, brightStarsMaterial);
+    starsBackground.add(brightStarPoints);
+}
+
+
+
+
+
 
 // Funzioni di salvataggio e caricamento dei dati
 function saveDataToLocalStorage() {
@@ -472,6 +642,9 @@ function init() {
     
     // Crea i bottoni per import/export
     createDataButtons();
+
+	    // Crea l'interruttore per lo sfondo stellato
+    createStarfieldToggle();
     
     // Crea i libri
     books.forEach(createBook);
@@ -859,7 +1032,10 @@ function animate() {
     for (const bookId in bookObjects) {
         bookObjects[bookId].rotation.y += 0.005;
     }
-    
+        // Animazione delle stelle - rotazione molto lenta
+    if (starsBackground && starsBackground.visible) {
+        starsBackground.rotation.y += 0.0001;
+    }
     renderer.render(scene, camera);
 }
 
