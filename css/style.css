@@ -47,7 +47,22 @@ button:hover {
     z-index: 200;
     width: 60%;
     max-width: 500px;
+		max-height : 80vh;
+		overflow-y : auto;
 }
+#editNoteContentInput {
+		resize : vertical;
+
+}
+
+#noteEditor input, 
+#noteEditor textarea, 
+#noteEditor select,
+#noteEditor button {
+	margin-bottom : 10px;
+}
+
+
 input, textarea, select {
     display: block;
     width: 100%;

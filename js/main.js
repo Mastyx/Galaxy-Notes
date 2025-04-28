@@ -890,7 +890,7 @@ function zoomOutView() {
     const viewDistance = Math.max(30, maxDist * 2.5);
     camera.position.set(
         centerX,
-        centerY + viewDistance * 0.3,
+        centerY + viewDistance * 0.7,
         centerZ + viewDistance
     );
     
@@ -908,24 +908,79 @@ function hideBookForm() {
     document.getElementById('bookForm').style.display = 'none';
 }
 
+// savebook 
+//
+// Modifica la funzione saveBook() per posizionare i libri in 3D in modo casuale evitando sovrapposizioni
 function saveBook() {
     const title = document.getElementById('bookTitleInput').value.trim();
     if (!title) return;
     
-    // Calcola posizione per il nuovo libro
-    const bookCount = books.length;
-    const angle = (bookCount * Math.PI * 0.5) % (Math.PI * 2);
-    const radius = Math.max(15, bookCount * 8);
+    let x, y, z;
+    let validPosition = false;
+    let attempts = 0;
+    const maxAttempts = 50; // Limite massimo di tentativi per trovare una posizione valida
+    
+    // Dimensione del libro (raggio) - usata per il controllo delle collisioni
+    const bookRadius = 2.5; // Leggermente più grande del raggio geometrico per garantire un po' di spazio
+    
+    if (books.length === 0) {
+        // Se è il primo libro, lo mettiamo al centro
+        x = 0;
+        y = 0;
+        z = 0;
+        validPosition = true;
+    } else {
+        // Se ci sono già altri libri, tentiamo di trovare una posizione valida
+        while (!validPosition && attempts < maxAttempts) {
+            attempts++;
+            
+            // Usiamo il primo libro come riferimento
+            let referenceBook = books[0];
+            
+            // Raggio minimo e massimo dal punto di riferimento
+            const minRadius = 10;
+            const maxRadius = 25;
+            
+            // Randomizzazione della posizione in 3D vicino al libro di riferimento
+            const radius = minRadius + Math.random() * (maxRadius - minRadius);
+            const theta = Math.random() * Math.PI * 2; // Angolo orizzontale (0-360 gradi)
+            const phi = (Math.random() - 0.5) * Math.PI; // Angolo verticale (-90 a +90 gradi)
+            
+            // Calcola le coordinate cartesiane basate sugli angoli sferici
+            x = referenceBook.position.x + radius * Math.cos(theta) * Math.cos(phi);
+            y = referenceBook.position.y + radius * Math.sin(phi); // Componente verticale
+            z = referenceBook.position.z + radius * Math.sin(theta) * Math.cos(phi);
+            
+            // Controlla sovrapposizioni con tutti i libri esistenti
+            validPosition = true; // Presume che sia valida finché non si trova una sovrapposizione
+            
+            for (const book of books) {
+                // Calcola la distanza tra la nuova posizione e il libro esistente
+                const dx = x - book.position.x;
+                const dy = y - book.position.y;
+                const dz = z - book.position.z;
+                const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+                
+                // Se la distanza è minore della somma dei raggi, c'è sovrapposizione
+                if (distance < bookRadius * 2) {
+                    validPosition = false;
+                    break;
+                }
+            }
+        }
+        
+        // Se non si trova una posizione valida dopo molti tentativi, avvisa l'utente
+        if (!validPosition) {
+            console.warn("Non è stato possibile trovare una posizione senza sovrapposizioni dopo", maxAttempts, "tentativi");
+            // Usiamo comunque l'ultima posizione generata, anche se potrebbe sovrapporsi
+        }
+    }
     
     const newBook = {
         id: books.length > 0 ? Math.max(...books.map(b => b.id)) + 1 : 1,
         title: title,
         color: Math.random() * 0xffffff,
-        position: {
-            x: Math.cos(angle) * radius,
-            y: 0,
-            z: Math.sin(angle) * radius
-        }
+        position: { x, y, z }
     };
     
     books.push(newBook);
