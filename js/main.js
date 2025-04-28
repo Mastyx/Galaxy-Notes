@@ -45,576 +45,571 @@ let isShiftDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 let cameraTarget = new THREE.Vector3(0, 0, 0);
 
+// serve per gestire il clik sul book che porta alla Creazione
+// di una nuova nota al book selezionato
+let selectedBookId = null;
+let lastBookClickTime = 0;
+
+
 // per lo sfondo stellato 
 let starsBackground; 
 let starfieldEnabled = false;
 
 const createStarfieldToggle = ()=> {
-	  const toggleContainer = document.createElement('div');
-    toggleContainer.className = 'starfield-toggle';
-    toggleContainer.style.position = 'absolute';
-    toggleContainer.style.top = '20px';
-    toggleContainer.style.right = '20px';
-    toggleContainer.style.zIndex = '100';
-    toggleContainer.style.display = 'flex';
-    toggleContainer.style.alignItems = 'center';
-    toggleContainer.style.background = 'rgba(0, 0, 0, 0.5)';
-    toggleContainer.style.padding = '5px 10px';
-    toggleContainer.style.borderRadius = '20px';
-    toggleContainer.style.color = 'white';
-    
-    const label = document.createElement('label');
-    label.textContent = 'Stelle';
-    label.style.marginRight = '10px';
-    label.style.fontSize = '14px';
-    
-    const toggleSwitch = document.createElement('div');
-    toggleSwitch.className = 'toggle-switch';
-    toggleSwitch.style.position = 'relative';
-    toggleSwitch.style.width = '40px';
-    toggleSwitch.style.height = '20px';
-    toggleSwitch.style.backgroundColor = '#ccc';
-    toggleSwitch.style.borderRadius = '20px';
-    toggleSwitch.style.cursor = 'pointer';
-    toggleSwitch.style.transition = 'background-color 0.3s';
-    
-    const toggleSlider = document.createElement('div');
-    toggleSlider.className = 'toggle-slider';
-    toggleSlider.style.position = 'absolute';
-    toggleSlider.style.width = '16px';
-    toggleSlider.style.height = '16px';
-    toggleSlider.style.left = '2px';
-    toggleSlider.style.top = '2px';
-    toggleSlider.style.backgroundColor = 'white';
-    toggleSlider.style.borderRadius = '50%';
-    toggleSlider.style.transition = 'transform 0.3s';
-    
-    toggleSwitch.appendChild(toggleSlider);
-    toggleContainer.appendChild(label);
-    toggleContainer.appendChild(toggleSwitch);
-    document.body.appendChild(toggleContainer);
-    
-    toggleSwitch.addEventListener('click', function() {
-        starfieldEnabled = !starfieldEnabled;
-        
-        if (starfieldEnabled) {
-            // Attiva sfondo stellato
-            toggleSwitch.style.backgroundColor = '#4287f5';
-            toggleSlider.style.transform = 'translateX(20px)';
-            
-            if (!starsBackground) {
-                createStarfield();
-            } else {
-                starsBackground.visible = true;
-            }
-        } else {
-            // Disattiva sfondo stellato
-            toggleSwitch.style.backgroundColor = '#ccc';
-            toggleSlider.style.transform = 'translateX(0)';
-            
-            if (starsBackground) {
-                starsBackground.visible = false;
-            }
-        }
-    });
+	const toggleContainer = document.createElement('div');
+	toggleContainer.className = 'starfield-toggle';
+	toggleContainer.style.position = 'absolute';
+	toggleContainer.style.top = '20px';
+	toggleContainer.style.right = '20px';
+	toggleContainer.style.zIndex = '100';
+	toggleContainer.style.display = 'flex';
+	toggleContainer.style.alignItems = 'center';
+	toggleContainer.style.background = 'rgba(0, 0, 0, 0.5)';
+	toggleContainer.style.padding = '5px 10px';
+	toggleContainer.style.borderRadius = '20px';
+	toggleContainer.style.color = 'white';
+	
+	const label = document.createElement('label');
+	label.textContent = 'Stelle';
+	label.style.marginRight = '10px';
+	label.style.fontSize = '14px';
+	
+	const toggleSwitch = document.createElement('div');
+	toggleSwitch.className = 'toggle-switch';
+	toggleSwitch.style.position = 'relative';
+	toggleSwitch.style.width = '40px';
+	toggleSwitch.style.height = '20px';
+	toggleSwitch.style.backgroundColor = '#ccc';
+	toggleSwitch.style.borderRadius = '20px';
+	toggleSwitch.style.cursor = 'pointer';
+	toggleSwitch.style.transition = 'background-color 0.3s';
+	
+	const toggleSlider = document.createElement('div');
+	toggleSlider.className = 'toggle-slider';
+	toggleSlider.style.position = 'absolute';
+	toggleSlider.style.width = '16px';
+	toggleSlider.style.height = '16px';
+	toggleSlider.style.left = '2px';
+	toggleSlider.style.top = '2px';
+	toggleSlider.style.backgroundColor = 'white';
+	toggleSlider.style.borderRadius = '50%';
+	toggleSlider.style.transition = 'transform 0.3s';
+	
+	toggleSwitch.appendChild(toggleSlider);
+	toggleContainer.appendChild(label);
+	toggleContainer.appendChild(toggleSwitch);
+	document.body.appendChild(toggleContainer);
+	
+	toggleSwitch.addEventListener('click', function() {
+			starfieldEnabled = !starfieldEnabled;
+			
+			if (starfieldEnabled) {
+					// Attiva sfondo stellato
+					toggleSwitch.style.backgroundColor = '#4287f5';
+					toggleSlider.style.transform = 'translateX(20px)';
+					
+					if (!starsBackground) {
+							createStarfield();
+					} else {
+							starsBackground.visible = true;
+					}
+			} else {
+					// Disattiva sfondo stellato
+					toggleSwitch.style.backgroundColor = '#ccc';
+					toggleSlider.style.transform = 'translateX(0)';
+					
+					if (starsBackground) {
+							starsBackground.visible = false;
+					}
+			}
+	});
 }
-// Crea lo sfondo stellato
+
+
+// funzione che Crea lo sfondo stellato
 function createStarfield() {
-    // Crea un nuovo gruppo per contenere le stelle
-    starsBackground = new THREE.Group();
-    
-    // Crea geometria per le stelle (particelle)
-    const starsGeometry = new THREE.BufferGeometry();
-    const starCount = 1500; // Numero di stelle (regolato per le performance)
-    
-    // Posizioni delle stelle (3 valori per stella: x, y, z)
-    const positions = new Float32Array(starCount * 3);
-    const sizes = new Float32Array(starCount);
-    
-    // Distribuisci le stelle in una sfera attorno alla scena
-    for (let i = 0; i < starCount; i++) {
-        // Posizione
-        const i3 = i * 3;
-        
-        // Coordiante sferiche per distribuzione uniforme
-        const radius = 100 + Math.random() * 50; // Distanza dal centro
-        const theta = Math.random() * Math.PI * 2; // Angolo orizzontale
-        const phi = Math.random() * Math.PI; // Angolo verticale
-        
-        // Converti coordinate sferiche in cartesiane
-        positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-        positions[i3 + 1] = radius * Math.cos(phi);
-        positions[i3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
-        
-        // Dimensione della stella (variabile)
-        sizes[i] = Math.random() * 2 + 0.5;
-    }
-    
-    starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    starsGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-    
-    // Materiale che renderà le stelle come punti luminosi
-    const starsMaterial = new THREE.PointsMaterial({
-        color: 0xffffff,
-        size: 0.7,
-        transparent: true,
-        opacity: 0.8,
-        sizeAttenuation: true // Le stelle più lontane appaiono più piccole
-    });
-    
-    // Crea le stelle (sistema di particelle)
-    const starPoints = new THREE.Points(starsGeometry, starsMaterial);
-    starsBackground.add(starPoints);
-    
-    // Aggiungi alla scena
-    scene.add(starsBackground);
-    
-    // Crea stelle più luminose (più rare)
-    const brightStarsGeometry = new THREE.BufferGeometry();
-    const brightStarCount = 100;
-    
-    const brightPositions = new Float32Array(brightStarCount * 3);
-    const brightSizes = new Float32Array(brightStarCount);
-    
-    for (let i = 0; i < brightStarCount; i++) {
-        const i3 = i * 3;
-        
-        // Stessa logica di distribuzione
-        const radius = 90 + Math.random() * 60;
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.random() * Math.PI;
-        
-        brightPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-        brightPositions[i3 + 1] = radius * Math.cos(phi);
-        brightPositions[i3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
-        
-        // Stelle più grandi
-        brightSizes[i] = Math.random() * 3 + 1.5;
-    }
-    
-    brightStarsGeometry.setAttribute('position', new THREE.BufferAttribute(brightPositions, 3));
-    brightStarsGeometry.setAttribute('size', new THREE.BufferAttribute(brightSizes, 1));
-    
-    const brightStarsMaterial = new THREE.PointsMaterial({
-        color: 0xffffff,
-        size: 1.5,
-        transparent: true,
-        opacity: 0.9,
-        sizeAttenuation: true
-    });
-    
-    const brightStarPoints = new THREE.Points(brightStarsGeometry, brightStarsMaterial);
-    starsBackground.add(brightStarPoints);
+	// Crea un nuovo gruppo per contenere le stelle
+	starsBackground = new THREE.Group();
+	// Crea geometria per le stelle (particelle)
+	const starsGeometry = new THREE.BufferGeometry();
+	const starCount = 1500; // Numero di stelle (regolato per le performance)
+	// Posizioni delle stelle (3 valori per stella: x, y, z)
+	const positions = new Float32Array(starCount * 3);
+	const sizes = new Float32Array(starCount);
+	
+	// Distribuisci le stelle in una sfera attorno alla scena
+	for (let i = 0; i < starCount; i++) {
+			// Posizione
+			const i3 = i * 3;
+			
+			// Coordiante sferiche per distribuzione uniforme
+			const radius = 100 + Math.random() * 50; // Distanza dal centro
+			const theta = Math.random() * Math.PI * 2; // Angolo orizzontale
+			const phi = Math.random() * Math.PI; // Angolo verticale
+			
+			// Converti coordinate sferiche in cartesiane
+			positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+			positions[i3 + 1] = radius * Math.cos(phi);
+			positions[i3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+			
+			// Dimensione della stella (variabile)
+			sizes[i] = Math.random() * 2 + 0.5;
+	}
+	
+	starsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+	starsGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+	
+	// Materiale che renderà le stelle come punti luminosi
+	const starsMaterial = new THREE.PointsMaterial({
+			color: 0xffffff,
+			size: 0.7,
+			transparent: true,
+			opacity: 0.8,
+			sizeAttenuation: true // Le stelle più lontane appaiono più piccole
+	});
+	
+	// Crea le stelle (sistema di particelle)
+	const starPoints = new THREE.Points(starsGeometry, starsMaterial);
+	starsBackground.add(starPoints);
+	
+	// Aggiungi alla scena
+	scene.add(starsBackground);
+	
+	// Crea stelle più luminose (più rare)
+	const brightStarsGeometry = new THREE.BufferGeometry();
+	const brightStarCount = 100;
+	
+	const brightPositions = new Float32Array(brightStarCount * 3);
+	const brightSizes = new Float32Array(brightStarCount);
+	
+	for (let i = 0; i < brightStarCount; i++) {
+			const i3 = i * 3;
+			// Stessa logica di distribuzione
+			const radius = 90 + Math.random() * 60;
+			const theta = Math.random() * Math.PI * 2;
+			const phi = Math.random() * Math.PI;
+			brightPositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+			brightPositions[i3 + 1] = radius * Math.cos(phi);
+			brightPositions[i3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+			// Stelle più grandi
+			brightSizes[i] = Math.random() * 3 + 1.5;
+	}
+	brightStarsGeometry.setAttribute('position', new THREE.BufferAttribute(brightPositions, 3));
+	brightStarsGeometry.setAttribute('size', new THREE.BufferAttribute(brightSizes, 1));
+	const brightStarsMaterial = new THREE.PointsMaterial({
+			color: 0xffffff,
+			size: 1.5,
+			transparent: true,
+			opacity: 0.9,
+			sizeAttenuation: true
+	});
+	const brightStarPoints = new THREE.Points(brightStarsGeometry, brightStarsMaterial);
+	starsBackground.add(brightStarPoints);
 }
-
-
-
-
 
 
 // Funzioni di salvataggio e caricamento dei dati
 function saveDataToLocalStorage() {
-    const data = {
-        books: books,
-        notes: notes
-    };
-    
-    try {
-        localStorage.setItem('mindMapData', JSON.stringify(data));
-        console.log('Dati salvati correttamente in localStorage');
-    } catch (e) {
-        console.error('Errore durante il salvataggio dei dati:', e);
-    }
+	const data = {
+			books: books,
+			notes: notes
+	};
+	
+	try {
+			localStorage.setItem('mindMapData', JSON.stringify(data));
+			console.log('Dati salvati correttamente in localStorage');
+	} catch (e) {
+			console.error('Errore durante il salvataggio dei dati:', e);
+	}
 }
 
 function loadDataFromLocalStorage() {
-    try {
-        const savedData = localStorage.getItem('mindMapData');
-        
-        if (savedData) {
-            const data = JSON.parse(savedData);
-            
-            if (data.books && Array.isArray(data.books)) {
-                books = data.books;
-            }
-            
-            if (data.notes && Array.isArray(data.notes)) {
-                notes = data.notes;
-            }
-            
-            console.log('Dati caricati correttamente da localStorage');
-            return true;
-        }
-    } catch (e) {
-        console.error('Errore durante il caricamento dei dati:', e);
-    }
-    
-    return false;
+	try {
+			const savedData = localStorage.getItem('mindMapData');
+			
+			if (savedData) {
+					const data = JSON.parse(savedData);
+					
+					if (data.books && Array.isArray(data.books)) {
+							books = data.books;
+					}
+					
+					if (data.notes && Array.isArray(data.notes)) {
+							notes = data.notes;
+					}
+					
+					console.log('Dati caricati correttamente da localStorage');
+					return true;
+			}
+	} catch (e) {
+			console.error('Errore durante il caricamento dei dati:', e);
+	}
+	
+	return false;
 }
 
 // Esporta i dati in un file JSON
 function exportData() {
-    const data = {
-        books: books,
-        notes: notes
-    };
-    
-    const dataStr = JSON.stringify(data, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const dataUrl = URL.createObjectURL(dataBlob);
-    
-    const downloadLink = document.createElement('a');
-    downloadLink.href = dataUrl;
-    downloadLink.download = 'mind_map_data.json';
-    downloadLink.click();
-    
-    URL.revokeObjectURL(dataUrl);
+	const data = {
+			books: books,
+			notes: notes
+	};
+	
+	const dataStr = JSON.stringify(data, null, 2);
+	const dataBlob = new Blob([dataStr], { type: 'application/json' });
+	const dataUrl = URL.createObjectURL(dataBlob);
+	
+	const downloadLink = document.createElement('a');
+	downloadLink.href = dataUrl;
+	downloadLink.download = 'mind_map_data.json';
+	downloadLink.click();
+	
+	URL.revokeObjectURL(dataUrl);
 }
 
 // Importa i dati da un file JSON
 function importData(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            
-            if (data.books && Array.isArray(data.books) && 
-                data.notes && Array.isArray(data.notes)) {
-                
-                // Pulisci la scena
-                clearScene();
-                
-                // Imposta i nuovi dati
-                books = data.books;
-                notes = data.notes;
-                
-                // Ricrea la scena
-                books.forEach(createBook);
-                notes.forEach(createNote);
-                
-                // Salva i dati importati
-                saveDataToLocalStorage();
-                
-                // Aggiorna l'UI
-                updateBookSelect();
-                zoomOutView();
-                
-                alert('Dati importati con successo!');
-            } else {
-                alert('File JSON non valido. Assicurati che contenga libri e note.');
-            }
-        } catch (err) {
-            console.error('Errore durante l\'importazione:', err);
-            alert('Errore durante l\'importazione del file.');
-        }
-    };
-    
-    reader.readAsText(file);
-    
-    // Reset input file
-    event.target.value = '';
+	const file = event.target.files[0];
+	if (!file) return;
+	const reader = new FileReader();
+	reader.onload = function(e) {
+			try {
+					const data = JSON.parse(e.target.result);
+					
+					if (data.books && Array.isArray(data.books) && 
+							data.notes && Array.isArray(data.notes)) {
+							
+							// Pulisci la scena
+							clearScene();
+							
+							// Imposta i nuovi dati
+							books = data.books;
+							notes = data.notes;
+							
+							// Ricrea la scena
+							books.forEach(createBook);
+							notes.forEach(createNote);
+							
+							// Salva i dati importati
+							saveDataToLocalStorage();
+							
+							// Aggiorna l'UI
+							updateBookSelect();
+							zoomOutView();
+							
+							alert('Dati importati con successo!');
+					} else {
+							alert('File JSON non valido. Assicurati che contenga libri e note.');
+					}
+			} catch (err) {
+					console.error('Errore durante l\'importazione:', err);
+					alert('Errore durante l\'importazione del file.');
+			}
+	};
+	
+	reader.readAsText(file);
+	
+	// Reset input file
+	event.target.value = '';
 }
 
 // Pulisci la scena
 function clearScene() {
-    // Rimuovi libri
-    for (const bookId in bookObjects) {
-        scene.remove(bookObjects[bookId]);
-        bookLabels[bookId].remove();
-    }
-    
-    // Rimuovi linee
-    for (const noteId in lineObjects) {
-        scene.remove(lineObjects[noteId]);
-    }
-    
-    // Rimuovi etichette delle note
-    for (const noteId in noteLabels) {
-        noteLabels[noteId].remove();
-    }
-    
-    // Resetta gli oggetti
-    Object.keys(bookObjects).forEach(key => delete bookObjects[key]);
-    Object.keys(bookLabels).forEach(key => delete bookLabels[key]);
-    Object.keys(lineObjects).forEach(key => delete lineObjects[key]);
-    Object.keys(noteLabels).forEach(key => delete noteLabels[key]);
-    Object.keys(notePositions).forEach(key => delete notePositions[key]);
+	// Rimuovi libri
+	for (const bookId in bookObjects) {
+			scene.remove(bookObjects[bookId]);
+			bookLabels[bookId].remove();
+	}
+	
+	// Rimuovi linee
+	for (const noteId in lineObjects) {
+			scene.remove(lineObjects[noteId]);
+	}
+	
+	// Rimuovi etichette delle note
+	for (const noteId in noteLabels) {
+			noteLabels[noteId].remove();
+	}
+	
+	// Resetta gli oggetti
+	Object.keys(bookObjects).forEach(key => delete bookObjects[key]);
+	Object.keys(bookLabels).forEach(key => delete bookLabels[key]);
+	Object.keys(lineObjects).forEach(key => delete lineObjects[key]);
+	Object.keys(noteLabels).forEach(key => delete noteLabels[key]);
+	Object.keys(notePositions).forEach(key => delete notePositions[key]);
 }
 
 // Creazione di elementi HTML per le etichette
 function createBookLabel(text, id) {
-    const div = document.createElement('div');
-    div.className = 'book-label';
-    div.textContent = text;
-    div.dataset.bookId = id;
-    div.style.position = 'absolute';
-    div.style.top = '0px';
-    div.style.left = '0px';
-    div.style.pointerEvents = 'none';
-    div.style.zIndex = '10';
-    document.body.appendChild(div);
-    return div;
+	const div = document.createElement('div');
+	div.className = 'book-label';
+	div.textContent = text;
+	div.dataset.bookId = id;
+	div.style.position = 'absolute';
+	div.style.top = '0px';
+	div.style.left = '0px';
+	div.style.pointerEvents = 'none';
+	div.style.zIndex = '10';
+	document.body.appendChild(div);
+	return div;
 }
 
 function createNoteLabel(text, id, noteColor) {
-    const div = document.createElement('div');
-    div.className = 'note-label';
-    div.textContent = text;
-    div.dataset.noteId = id;
-    div.style.position = 'absolute';
-    div.style.top = '0px';
-    div.style.left = '0px';
-    div.style.zIndex = '10';
-    
-    // Converti colore in formato RGB
-    const r = (noteColor >> 16) & 255;
-    const g = (noteColor >> 8) & 255;
-    const b = noteColor & 255;
-    div.style.color = `rgb(${r}, ${g}, ${b})`;
-    
-    // Aggiungi event listener
-    div.addEventListener('click', function() {
-        const noteId = parseInt(this.dataset.noteId);
-        const note = notes.find(n => n.id === noteId);
-        if (note) {
-            openNoteEditor(note);
-        }
-    });
-    
-    document.body.appendChild(div);
-    return div;
+	const div = document.createElement('div');
+	div.className = 'note-label';
+	div.textContent = text;
+	div.dataset.noteId = id;
+	div.style.position = 'absolute';
+	div.style.top = '0px';
+	div.style.left = '0px';
+	div.style.zIndex = '10';
+	
+	// Converti colore in formato RGB
+	const r = (noteColor >> 16) & 255;
+	const g = (noteColor >> 8) & 255;
+	const b = noteColor & 255;
+	div.style.color = `rgb(${r}, ${g}, ${b})`;
+	
+	// Aggiungi event listener
+	div.addEventListener('click', function() {
+			const noteId = parseInt(this.dataset.noteId);
+			const note = notes.find(n => n.id === noteId);
+			if (note) {
+					openNoteEditor(note);
+			}
+	});
+	
+	document.body.appendChild(div);
+	return div;
 }
 
 // Aggiorna la posizione di un'etichetta in base alla posizione 3D
 function updateLabelPosition(label, position) {
-    if (!label || !position) return;
-    
-    // Calcola posizione proiettata sullo schermo
-    const vector = new THREE.Vector3(position.x, position.y, position.z);
-    
-    vector.project(camera);
-    
-    const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-    const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
-    
-    // Aggiorna la posizione dell'etichetta
-    label.style.transform = `translate(-50%, -100%)`;
-    label.style.left = `${x}px`;
-    label.style.top = `${y}px`;
+	if (!label || !position) return;
+	
+	// Calcola posizione proiettata sullo schermo
+	const vector = new THREE.Vector3(position.x, position.y, position.z);
+	
+	vector.project(camera);
+	
+	const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+	const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+	
+	// Aggiorna la posizione dell'etichetta
+	label.style.transform = `translate(-50%, -100%)`;
+	label.style.left = `${x}px`;
+	label.style.top = `${y}px`;
 }
 
 // Creazione del libro
 function createBook(book) {
-    const geometry = new THREE.SphereGeometry(2, 32, 32);
-    const material = new THREE.MeshPhongMaterial({ 
-        color: book.color,
-        emissive: new THREE.Color(book.color).multiplyScalar(0.3)
-    });
-    const mesh = new THREE.Mesh(geometry, material);
-    
-    // Posiziona il libro
-    mesh.position.set(book.position.x, book.position.y, book.position.z);
-    
-    scene.add(mesh);
-    bookObjects[book.id] = mesh;
-    
-    // Aggiungi un effetto glow
-    const glowGeometry = new THREE.SphereGeometry(2.2, 32, 32);
-    const glowMaterial = new THREE.MeshBasicMaterial({
-        color: book.color,
-        transparent: true,
-        opacity: 0.2
-    });
-    const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-    mesh.add(glow);
-    
-    // Crea l'etichetta per il titolo del libro
-    const label = createBookLabel(book.title, book.id);
-    bookLabels[book.id] = label;
-    
-    return mesh;
+	const geometry = new THREE.SphereGeometry(2, 32, 32);
+	const material = new THREE.MeshPhongMaterial({ 
+			color: book.color,
+			emissive: new THREE.Color(book.color).multiplyScalar(0.3)
+	});
+	const mesh = new THREE.Mesh(geometry, material);
+	
+	// Posiziona il libro
+	mesh.position.set(book.position.x, book.position.y, book.position.z);
+	
+	scene.add(mesh);
+	bookObjects[book.id] = mesh;
+	
+	// Aggiungi un effetto glow
+	const glowGeometry = new THREE.SphereGeometry(2.2, 32, 32);
+	const glowMaterial = new THREE.MeshBasicMaterial({
+			color: book.color,
+			transparent: true,
+			opacity: 0.2
+	});
+	const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+	mesh.add(glow);
+	
+	// Crea l'etichetta per il titolo del libro
+	const label = createBookLabel(book.title, book.id);
+	bookLabels[book.id] = label;
+	
+	return mesh;
 }
 
 // Creazione delle note (ora solo etichette e posizioni)
 function createNote(note) {
-    const book = books.find(b => b.id === note.bookId);
-    if (!book) return null;
-    
-    // Calcola la posizione iniziale della nota
-    const bookPosition = new THREE.Vector3(book.position.x, book.position.y, book.position.z);
-    const notePosition = calculateNotePosition(note.orbit, bookPosition);
-    
-    // Memorizza la posizione della nota
-    notePositions[note.id] = {
-        position: notePosition,
-        data: note
-    };
-    
-    // Crea l'etichetta per il titolo della nota
-    const label = createNoteLabel(note.title, note.id, note.color);
-    noteLabels[note.id] = label;
-    
-    // Crea la linea di collegamento
-    const bookMesh = bookObjects[note.bookId];
-    const lineMaterial = new THREE.LineBasicMaterial({ 
-        color: note.color,
-        transparent: true,
-        opacity: 0.4
-    });
-    
-    const points = [
-        bookMesh.position,
-        notePosition
-    ];
-    
-    const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-    const line = new THREE.Line(lineGeometry, lineMaterial);
-    scene.add(line);
-    
-    lineObjects[note.id] = line;
+	const book = books.find(b => b.id === note.bookId);
+	if (!book) return null;
+	
+	// Calcola la posizione iniziale della nota
+	const bookPosition = new THREE.Vector3(book.position.x, book.position.y, book.position.z);
+	const notePosition = calculateNotePosition(note.orbit, bookPosition);
+	
+	// Memorizza la posizione della nota
+	notePositions[note.id] = {
+			position: notePosition,
+			data: note
+	};
+	
+	// Crea l'etichetta per il titolo della nota
+	const label = createNoteLabel(note.title, note.id, note.color);
+	noteLabels[note.id] = label;
+	
+	// Crea la linea di collegamento
+	const bookMesh = bookObjects[note.bookId];
+	const lineMaterial = new THREE.LineBasicMaterial({ 
+			color: note.color,
+			transparent: true,
+			opacity: 0.4
+	});
+	
+	const points = [
+			bookMesh.position,
+			notePosition
+	];
+	
+	const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+	const line = new THREE.Line(lineGeometry, lineMaterial);
+	scene.add(line);
+	
+	lineObjects[note.id] = line;
 }
 
 // Calcola la posizione della nota durante l'orbita
 function calculateNotePosition(orbit, bookPosition) {
-    const x = Math.cos(orbit.angle) * orbit.radius + bookPosition.x;
-    const y = Math.sin(orbit.angle) * orbit.radius * 0.3 + bookPosition.y; // Ellittica
-    const z = Math.sin(orbit.angle) * orbit.radius + bookPosition.z;
-    
-    return new THREE.Vector3(x, y, z);
+	const x = Math.cos(orbit.angle) * orbit.radius + bookPosition.x;
+	const y = Math.sin(orbit.angle) * orbit.radius * 0.3 + bookPosition.y; // Ellittica
+	const z = Math.sin(orbit.angle) * orbit.radius + bookPosition.z;
+	
+	return new THREE.Vector3(x, y, z);
 }
 
 // Aggiorna la posizione delle note
 function updateNotePositions() {
-    for (const noteId in notePositions) {
-        const noteData = notePositions[noteId];
-        const note = noteData.data;
-        const bookId = note.bookId;
-        const book = books.find(b => b.id === bookId);
-        
-        if (book) {
-            note.orbit.angle += note.orbit.speed;
-            const bookPosition = new THREE.Vector3(book.position.x, book.position.y, book.position.z);
-            noteData.position = calculateNotePosition(note.orbit, bookPosition);
-        }
-    }
+	for (const noteId in notePositions) {
+			const noteData = notePositions[noteId];
+			const note = noteData.data;
+			const bookId = note.bookId;
+			const book = books.find(b => b.id === bookId);
+			
+			if (book) {
+					note.orbit.angle += note.orbit.speed;
+					const bookPosition = new THREE.Vector3(book.position.x, book.position.y, book.position.z);
+					noteData.position = calculateNotePosition(note.orbit, bookPosition);
+			}
+	}
 }
 
 // Aggiorna le linee di collegamento
 function updateLines() {
-    for (const noteId in notePositions) {
-        const noteData = notePositions[noteId];
-        const line = lineObjects[noteId];
-        const bookId = noteData.data.bookId;
-        
-        if (line && line.geometry && bookObjects[bookId]) {
-            const points = [
-                bookObjects[bookId].position,
-                noteData.position
-            ];
-            
-            line.geometry.setFromPoints(points);
-            line.geometry.attributes.position.needsUpdate = true;
-        }
-    }
+	for (const noteId in notePositions) {
+			const noteData = notePositions[noteId];
+			const line = lineObjects[noteId];
+			const bookId = noteData.data.bookId;
+			
+			if (line && line.geometry && bookObjects[bookId]) {
+					const points = [
+							bookObjects[bookId].position,
+							noteData.position
+					];
+					
+					line.geometry.setFromPoints(points);
+					line.geometry.attributes.position.needsUpdate = true;
+			}
+	}
 }
 
 // Aggiorna le etichette
 function updateLabels() {
-    // Aggiorna le etichette dei libri
-    for (const bookId in bookObjects) {
-        updateLabelPosition(bookLabels[bookId], bookObjects[bookId].position);
-    }
-    
-    // Aggiorna le etichette delle note
-    for (const noteId in notePositions) {
-        updateLabelPosition(noteLabels[noteId], notePositions[noteId].position);
-    }
+	// Aggiorna le etichette dei libri
+	for (const bookId in bookObjects) {
+			updateLabelPosition(bookLabels[bookId], bookObjects[bookId].position);
+	}
+	
+	// Aggiorna le etichette delle note
+	for (const noteId in notePositions) {
+			updateLabelPosition(noteLabels[noteId], notePositions[noteId].position);
+	}
 }
 
 // Gestione del controllo della camera con il mouse
 function handleMouseDown(event) {
-    isDragging = true;
-    isShiftDragging = event.shiftKey;
-    previousMousePosition = {
-        x: event.clientX,
-        y: event.clientY
-    };
+	isDragging = true;
+	isShiftDragging = event.shiftKey;
+	previousMousePosition = {
+			x: event.clientX,
+			y: event.clientY
+	};
 }
 
 function handleMouseMove(event) {
-    if (!isDragging) return;
-    
-    const deltaMove = {
-        x: event.clientX - previousMousePosition.x,
-        y: event.clientY - previousMousePosition.y
-    };
-    
-    if (isShiftDragging) {
-        // Modalità di panning (spostamento laterale)
-        const panSpeed = 0.05;
-        const panLeft = new THREE.Vector3();
-        const panUp = new THREE.Vector3();
-        
-        // Calcola i vettori di panning basati sulla camera
-        const vec = new THREE.Vector3();
-        const position = camera.position.clone();
-        
-        vec.setFromMatrixColumn(camera.matrix, 0);
-        vec.multiplyScalar(-deltaMove.x * panSpeed);
-        panLeft.copy(vec);
-        
-        vec.setFromMatrixColumn(camera.matrix, 1);
-        vec.multiplyScalar(deltaMove.y * panSpeed);
-        panUp.copy(vec);
-        
-        // Applica il panning
-        camera.position.add(panLeft);
-        camera.position.add(panUp);
-        cameraTarget.add(panLeft);
-        cameraTarget.add(panUp);
-        camera.lookAt(cameraTarget);
-    } else {
-        // Modalità di rotazione
-        const rotationSpeed = 0.01;
-        
-        // Calcola la rotazione della camera intorno al punto target
-        const cameraPosVector = camera.position.clone().sub(cameraTarget);
-        
-        // Rotazione orizzontale (intorno all'asse Y)
-        const rotationY = new THREE.Quaternion().setFromAxisAngle(
-            new THREE.Vector3(0, 1, 0),
-            deltaMove.x * rotationSpeed
-        );
-        cameraPosVector.applyQuaternion(rotationY);
-        
-        // Rotazione verticale (intorno all'asse X)
-        const axis = new THREE.Vector3().crossVectors(
-            cameraPosVector,
-            new THREE.Vector3(0, 1, 0)
-        ).normalize();
-        
-        const rotationX = new THREE.Quaternion().setFromAxisAngle(
-            axis,
-            deltaMove.y * rotationSpeed
-        );
-        cameraPosVector.applyQuaternion(rotationX);
-        
-        // Aggiorna la posizione della camera
-        camera.position.copy(cameraTarget).add(cameraPosVector);
-        camera.lookAt(cameraTarget);
-    }
-    
-    previousMousePosition = {
-        x: event.clientX,
-        y: event.clientY
-    };
+	if (!isDragging) return;
+	
+	const deltaMove = {
+			x: event.clientX - previousMousePosition.x,
+			y: event.clientY - previousMousePosition.y
+	};
+	
+	if (isShiftDragging) {
+			// Modalità di panning (spostamento laterale)
+			const panSpeed = 0.05;
+			const panLeft = new THREE.Vector3();
+			const panUp = new THREE.Vector3();
+			
+			// Calcola i vettori di panning basati sulla camera
+			const vec = new THREE.Vector3();
+			const position = camera.position.clone();
+			
+			vec.setFromMatrixColumn(camera.matrix, 0);
+			vec.multiplyScalar(-deltaMove.x * panSpeed);
+			panLeft.copy(vec);
+			
+			vec.setFromMatrixColumn(camera.matrix, 1);
+			vec.multiplyScalar(deltaMove.y * panSpeed);
+			panUp.copy(vec);
+			
+			// Applica il panning
+			camera.position.add(panLeft);
+			camera.position.add(panUp);
+			cameraTarget.add(panLeft);
+			cameraTarget.add(panUp);
+			camera.lookAt(cameraTarget);
+	} else {
+			// Modalità di rotazione
+			const rotationSpeed = 0.01;
+			
+			// Calcola la rotazione della camera intorno al punto target
+			const cameraPosVector = camera.position.clone().sub(cameraTarget);
+			
+			// Rotazione orizzontale (intorno all'asse Y)
+			const rotationY = new THREE.Quaternion().setFromAxisAngle(
+					new THREE.Vector3(0, 1, 0),
+					deltaMove.x * rotationSpeed
+			);
+			cameraPosVector.applyQuaternion(rotationY);
+			
+			// Rotazione verticale (intorno all'asse X)
+			const axis = new THREE.Vector3().crossVectors(
+					cameraPosVector,
+					new THREE.Vector3(0, 1, 0)
+			).normalize();
+			
+			const rotationX = new THREE.Quaternion().setFromAxisAngle(
+					axis,
+					deltaMove.y * rotationSpeed
+			);
+			cameraPosVector.applyQuaternion(rotationX);
+			
+			// Aggiorna la posizione della camera
+			camera.position.copy(cameraTarget).add(cameraPosVector);
+			camera.lookAt(cameraTarget);
+	}
+	
+	previousMousePosition = {
+			x: event.clientX,
+			y: event.clientY
+	};
 }
 
 function handleMouseUp() {
-    isDragging = false;
+  isDragging = false;
 }
 
 // Gestione dello zoom con la rotellina del mouse
@@ -679,18 +674,20 @@ function init() {
         const bookIntersects = raycaster.intersectObjects(
             Object.values(bookObjects)
         );
-        
         if (bookIntersects.length > 0) {
-            const object = bookIntersects[0].object;
-            const bookId = Object.keys(bookObjects).find(
-                id => bookObjects[id] === object
-            );
-            
-            if (bookId) {
-                selectBook(parseInt(bookId));
-            }
+        const object = bookIntersects[0].object;
+        const bookId = parseInt(Object.keys(bookObjects).find(
+            id => bookObjects[id] === object
+        ));
+        
+        if (bookId) {
+            selectBook(bookId);
         }
-    });
+			} else {
+					// Se non abbiamo cliccato su un libro, resetta la selezione
+					selectedBookId = null;
+			}
+});
     
     // UI Events
     document.getElementById('addBook').addEventListener('click', showBookForm);
@@ -840,19 +837,60 @@ function deleteNote() {
 
 // Seleziona un libro
 function selectBook(bookId) {
-    const bookMesh = bookObjects[bookId];
+	const currentTime = new Date().getTime();
     
-    // Imposta il target della camera
-    cameraTarget.copy(bookMesh.position);
-    
-    // Zoom sul libro
-    const distance = 10;
-    const direction = new THREE.Vector3(0, 0, 1).normalize();
-    camera.position.copy(cameraTarget).addScaledVector(direction, distance);
-    
-    // Guarda verso il libro
-    camera.lookAt(cameraTarget);
+	// Se è lo stesso libro già selezionato e il click avviene entro un certo tempo (1.5 secondi)
+	if (bookId === selectedBookId && (currentTime - lastBookClickTime < 1500)) {
+			// Prepara il form per aggiungere una nuova nota a questo libro
+			prepareNoteFormForBook(bookId);
+	} else {
+			// Primo click o click su libro diverso: seleziona il libro e zoom
+			selectedBookId = bookId;
+			
+			const bookMesh = bookObjects[bookId];
+			
+			// Imposta il target della camera
+			cameraTarget.copy(bookMesh.position);
+			
+			// Zoom sul libro
+			const distance = 10;
+			const direction = new THREE.Vector3(0, 0, 1).normalize();
+			camera.position.copy(cameraTarget).addScaledVector(direction, distance);
+			
+			// Guarda verso il libro
+			camera.lookAt(cameraTarget);
+	}
+	
+	// Aggiorna il timestamp dell'ultimo click
+	lastBookClickTime = currentTime;
 }
+// Funzione per preparare automaticamente il form per l'aggiunta di una nota al libro selezionato
+function prepareNoteFormForBook(bookId) {
+	// Trova il libro per il titolo
+	const book = books.find(b => b.id === bookId);
+	if (!book) return;
+	
+	// Mostra il form per la nota
+	document.getElementById('noteForm').style.display = 'block';
+	
+	// Seleziona automaticamente il libro nel select
+	const bookSelect = document.getElementById('bookSelect');
+	bookSelect.value = bookId;
+	
+	// Metti focus sul titolo della nota
+	document.getElementById('noteTitleInput').focus();
+	
+	// Aggiorna il titolo del form per chiarire che si sta aggiungendo una nota a un libro specifico
+	const formTitle = document.querySelector('#noteForm h2') || document.createElement('h2');
+	formTitle.textContent = `Nuova nota per: ${book.title}`;
+	
+	if (!formTitle.parentNode) {
+			document.getElementById('noteForm').insertBefore(formTitle, document.getElementById('noteForm').firstChild);
+	}
+}
+
+
+
 
 // Vista generale
 function zoomOutView() {
