@@ -8,9 +8,6 @@ let notes = [
     { id: 3, bookId: 1, title: "Terza Nota", content: "La terza nota contiene informazioni importanti sul progetto.", color: 0xf5a442, orbit: { radius: 9, speed: 0.0008, angle: 4 } }
 ];
 
-
-
-
 // Inizializzazione della scena
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0a1a);
