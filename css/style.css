@@ -10,6 +10,33 @@ body {
 	color: white;
 	background-color: #0a0a1a;
 }
+
+.starfield-toggle {
+	position: absolute;
+	top : 20px;
+	right  : 20px;
+	z-index : 100;
+	display : flex;
+	align-items: center;
+	background : rgba(0,0,0,0.5);
+	border-radius : 20px;
+	padding : 5px 10px;
+	color : #fff;
+}
+.label-toggle {
+	margin-right : 10px;
+	font-size : 14px;
+}
+.toggle-switch {
+	position : relative;
+	width : 40px;
+	height : 20px;
+	background-color : #ccc;
+	border-radius : 20px;
+	cursor : pointer;
+	transition : background-color 0.3s;
+}
+
 canvas {
 	display: block;
 }

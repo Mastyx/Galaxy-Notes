@@ -53,34 +53,10 @@ let starsBackground;
 let starfieldEnabled = false;
 
 const createStarfieldToggle = ()=> {
-	const toggleContainer = document.createElement('div');
-	toggleContainer.className = 'starfield-toggle';
-	toggleContainer.style.position = 'absolute';
-	toggleContainer.style.top = '20px';
-	toggleContainer.style.right = '20px';
-	toggleContainer.style.zIndex = '100';
-	toggleContainer.style.display = 'flex';
-	toggleContainer.style.alignItems = 'center';
-	toggleContainer.style.background = 'rgba(0, 0, 0, 0.5)';
-	toggleContainer.style.padding = '5px 10px';
-	toggleContainer.style.borderRadius = '20px';
-	toggleContainer.style.color = 'white';
-	
-	const label = document.createElement('label');
-	label.textContent = 'Stelle';
-	label.style.marginRight = '10px';
-	label.style.fontSize = '14px';
-	
-	const toggleSwitch = document.createElement('div');
-	toggleSwitch.className = 'toggle-switch';
-	toggleSwitch.style.position = 'relative';
-	toggleSwitch.style.width = '40px';
-	toggleSwitch.style.height = '20px';
-	toggleSwitch.style.backgroundColor = '#ccc';
-	toggleSwitch.style.borderRadius = '20px';
-	toggleSwitch.style.cursor = 'pointer';
-	toggleSwitch.style.transition = 'background-color 0.3s';
-	
+	const toggleContainer = document.querySelector(".starfield-toggle");
+	const label = document.querySelector('.label-toggle');
+	const toggleSwitch = document.querySelector('.toggle-switch');
+		// sono arrivato qui 
 	const toggleSlider = document.createElement('div');
 	toggleSlider.className = 'toggle-slider';
 	toggleSlider.style.position = 'absolute';
