@@ -36,6 +36,16 @@ body {
 	cursor : pointer;
 	transition : background-color 0.3s;
 }
+.toggle-slider {
+	position : absolute;
+	width : 16px;
+	height : 16px;
+	left : 2px;
+	top : 2px;
+	background-color : #fff;
+	border-radius : 50%;
+	transition : transform 0.3s;
+}
 
 canvas {
 	display: block;

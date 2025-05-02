@@ -47,57 +47,40 @@ let cameraTarget = new THREE.Vector3(0, 0, 0);
 let selectedBookId = null;
 let lastBookClickTime = 0;
 
-
 // per lo sfondo stellato 
 let starsBackground; 
 let starfieldEnabled = false;
 
 const createStarfieldToggle = ()=> {
-	const toggleContainer = document.querySelector(".starfield-toggle");
-	const label = document.querySelector('.label-toggle');
+	//const toggleContainer = document.querySelector(".starfield-toggle");
+	//const label = document.querySelector('.label-toggle');
 	const toggleSwitch = document.querySelector('.toggle-switch');
-		// sono arrivato qui 
-	const toggleSlider = document.createElement('div');
-	toggleSlider.className = 'toggle-slider';
-	toggleSlider.style.position = 'absolute';
-	toggleSlider.style.width = '16px';
-	toggleSlider.style.height = '16px';
-	toggleSlider.style.left = '2px';
-	toggleSlider.style.top = '2px';
-	toggleSlider.style.backgroundColor = 'white';
-	toggleSlider.style.borderRadius = '50%';
-	toggleSlider.style.transition = 'transform 0.3s';
-	
-	toggleSwitch.appendChild(toggleSlider);
-	toggleContainer.appendChild(label);
-	toggleContainer.appendChild(toggleSwitch);
-	document.body.appendChild(toggleContainer);
+	const toggleSlider = document.querySelector(".toggle-slider")
 	
 	toggleSwitch.addEventListener('click', function() {
-			starfieldEnabled = !starfieldEnabled;
-			
-			if (starfieldEnabled) {
-					// Attiva sfondo stellato
-					toggleSwitch.style.backgroundColor = '#4287f5';
-					toggleSlider.style.transform = 'translateX(20px)';
-					
-					if (!starsBackground) {
-							createStarfield();
-					} else {
-							starsBackground.visible = true;
-					}
-			} else {
-					// Disattiva sfondo stellato
-					toggleSwitch.style.backgroundColor = '#ccc';
-					toggleSlider.style.transform = 'translateX(0)';
-					
-					if (starsBackground) {
-							starsBackground.visible = false;
-					}
-			}
+		starfieldEnabled = !starfieldEnabled;
+		
+		if (starfieldEnabled) {
+				// Attiva sfondo stellato
+				toggleSwitch.style.backgroundColor = '#4287f5';
+				toggleSlider.style.transform = 'translateX(20px)';
+				
+				if (!starsBackground) {
+						createStarfield();
+				} else {
+						starsBackground.visible = true;
+				}
+		} else {
+				// Disattiva sfondo stellato
+				toggleSwitch.style.backgroundColor = '#ccc';
+				toggleSlider.style.transform = 'translateX(0)';
+				
+				if (starsBackground) {
+						starsBackground.visible = false;
+				}
+		}
 	});
 }
-
 
 // funzione che Crea lo sfondo stellato
 function createStarfield() {
@@ -180,7 +163,6 @@ function createStarfield() {
 	starsBackground.add(brightStarPoints);
 }
 
-
 // Funzioni di salvataggio e caricamento dei dati
 function saveDataToLocalStorage() {
 	const data = {
@@ -246,38 +228,38 @@ function importData(event) {
 	if (!file) return;
 	const reader = new FileReader();
 	reader.onload = function(e) {
-			try {
-					const data = JSON.parse(e.target.result);
+		try {
+			const data = JSON.parse(e.target.result);
+			
+			if (data.books && Array.isArray(data.books) && 
+					data.notes && Array.isArray(data.notes)) {
 					
-					if (data.books && Array.isArray(data.books) && 
-							data.notes && Array.isArray(data.notes)) {
-							
-							// Pulisci la scena
-							clearScene();
-							
-							// Imposta i nuovi dati
-							books = data.books;
-							notes = data.notes;
-							
-							// Ricrea la scena
-							books.forEach(createBook);
-							notes.forEach(createNote);
-							
-							// Salva i dati importati
-							saveDataToLocalStorage();
-							
-							// Aggiorna l'UI
-							updateBookSelect();
-							zoomOutView();
-							
-							alert('Dati importati con successo!');
-					} else {
-							alert('File JSON non valido. Assicurati che contenga libri e note.');
-					}
-			} catch (err) {
-					console.error('Errore durante l\'importazione:', err);
-					alert('Errore durante l\'importazione del file.');
+					// Pulisci la scena
+					clearScene();
+					
+					// Imposta i nuovi dati
+					books = data.books;
+					notes = data.notes;
+					
+					// Ricrea la scena
+					books.forEach(createBook);
+					notes.forEach(createNote);
+					
+					// Salva i dati importati
+					saveDataToLocalStorage();
+					
+					// Aggiorna l'UI
+					updateBookSelect();
+					zoomOutView();
+					
+					alert('Dati importati con successo!');
+			} else {
+					alert('File JSON non valido. Assicurati che contenga libri e note.');
 			}
+		} catch (err) {
+				console.error('Errore durante l\'importazione:', err);
+				alert('Errore durante l\'importazione del file.');
+		}
 	};
 	
 	reader.readAsText(file);
@@ -348,7 +330,7 @@ function createNoteLabel(text, id, noteColor) {
 			const noteId = parseInt(this.dataset.noteId);
 			const note = notes.find(n => n.id === noteId);
 			if (note) {
-					openNoteEditor(note);
+				openNoteEditor(note);
 			}
 	});
 	
@@ -359,7 +341,6 @@ function createNoteLabel(text, id, noteColor) {
 // Aggiorna la posizione di un'etichetta in base alla posizione 3D
 function updateLabelPosition(label, position) {
 	if (!label || !position) return;
-	
 	// Calcola posizione proiettata sullo schermo
 	const vector = new THREE.Vector3(position.x, position.y, position.z);
 	
@@ -378,8 +359,8 @@ function updateLabelPosition(label, position) {
 function createBook(book) {
 	const geometry = new THREE.SphereGeometry(2, 32, 32);
 	const material = new THREE.MeshPhongMaterial({ 
-			color: book.color,
-			emissive: new THREE.Color(book.color).multiplyScalar(0.3)
+		color: book.color,
+		emissive: new THREE.Color(book.color).multiplyScalar(0.3)
 	});
 	const mesh = new THREE.Mesh(geometry, material);
 	
@@ -392,17 +373,16 @@ function createBook(book) {
 	// Aggiungi un effetto glow
 	const glowGeometry = new THREE.SphereGeometry(2.2, 32, 32);
 	const glowMaterial = new THREE.MeshBasicMaterial({
-			color: book.color,
-			transparent: true,
-			opacity: 0.2
+		color: book.color,
+		transparent: true,
+		opacity: 0.2
 	});
 	const glow = new THREE.Mesh(glowGeometry, glowMaterial);
 	mesh.add(glow);
 	
 	// Crea l'etichetta per il titolo del libro
 	const label = createBookLabel(book.title, book.id);
-	bookLabels[book.id] = label;
-	
+	bookLabels[book.id] = label;	
 	return mesh;
 }
 
@@ -440,8 +420,7 @@ function createNote(note) {
 	
 	const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
 	const line = new THREE.Line(lineGeometry, lineMaterial);
-	scene.add(line);
-	
+	scene.add(line);	
 	lineObjects[note.id] = line;
 }
 
@@ -587,159 +566,159 @@ function handleMouseUp() {
 
 // Gestione dello zoom con la rotellina del mouse
 function handleMouseWheel(event) {
-    event.preventDefault();
-    
-    // Calcola direzione e intensità dello zoom
-    const delta = Math.sign(event.deltaY);
-    const zoomSpeed = 1;
-    
-    // Calcola il vettore dalla camera al target
-    const direction = new THREE.Vector3().subVectors(camera.position, cameraTarget).normalize();
-    
-    // Applica lo zoom (avvicina o allontana la camera)
-    const distance = camera.position.distanceTo(cameraTarget);
-    const newDistance = Math.max(5, distance + delta * zoomSpeed);
-    
-    camera.position.copy(cameraTarget).addScaledVector(direction, newDistance);
+	event.preventDefault();
+	
+	// Calcola direzione e intensità dello zoom
+	const delta = Math.sign(event.deltaY);
+	const zoomSpeed = 1;
+	
+	// Calcola il vettore dalla camera al target
+	const direction = new THREE.Vector3().subVectors(camera.position, cameraTarget).normalize();
+	
+	// Applica lo zoom (avvicina o allontana la camera)
+	const distance = camera.position.distanceTo(cameraTarget);
+	const newDistance = Math.max(5, distance + delta * zoomSpeed);
+	
+	camera.position.copy(cameraTarget).addScaledVector(direction, newDistance);
 }
 
 // Inizializza la scena
 function init() {
-    // Carica dati da localStorage (se disponibili)
-    const dataLoaded = loadDataFromLocalStorage();
-    
-    // Crea i bottoni per import/export
-    createDataButtons();
+	// Carica dati da localStorage (se disponibili)
+	const dataLoaded = loadDataFromLocalStorage();
+	
+	// Crea i bottoni per import/export
+	createDataButtons();
 
-	    // Crea l'interruttore per lo sfondo stellato
-    createStarfieldToggle();
-    
-    // Crea i libri
-    books.forEach(createBook);
-    
-    // Crea le note
-    notes.forEach(createNote);
-    
-    // Event listeners
-    window.addEventListener('resize', onWindowResize);
-    
-    // Interazione con il mouse per la navigazione
-    renderer.domElement.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    
-    // Zoom con la rotellina del mouse
-    renderer.domElement.addEventListener('wheel', handleMouseWheel, { passive: false });
-    
-    // Interazione con il mouse per la selezione
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    
-    renderer.domElement.addEventListener('click', (event) => {
-        if (isDragging) return; // Ignora il click se si sta trascinando
-        
-        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-        
-        raycaster.setFromCamera(mouse, camera);
-        
-        // Controlla intersezioni con i libri
-        const bookIntersects = raycaster.intersectObjects(
-            Object.values(bookObjects)
-        );
-        if (bookIntersects.length > 0) {
-        const object = bookIntersects[0].object;
-        const bookId = parseInt(Object.keys(bookObjects).find(
-            id => bookObjects[id] === object
-        ));
-        
-        if (bookId) {
-            selectBook(bookId);
-        }
-			} else {
-					// Se non abbiamo cliccato su un libro, resetta la selezione
-					selectedBookId = null;
+		// Crea l'interruttore per lo sfondo stellato
+	createStarfieldToggle();
+	
+	// Crea i libri
+	books.forEach(createBook);
+	
+	// Crea le note
+	notes.forEach(createNote);
+	
+	// Event listeners
+	window.addEventListener('resize', onWindowResize);
+	
+	// Interazione con il mouse per la navigazione
+	renderer.domElement.addEventListener('mousedown', handleMouseDown);
+	window.addEventListener('mousemove', handleMouseMove);
+	window.addEventListener('mouseup', handleMouseUp);
+	
+	// Zoom con la rotellina del mouse
+	renderer.domElement.addEventListener('wheel', handleMouseWheel, { passive: false });
+	
+	// Interazione con il mouse per la selezione
+	const raycaster = new THREE.Raycaster();
+	const mouse = new THREE.Vector2();
+	
+	renderer.domElement.addEventListener('click', (event) => {
+			if (isDragging) return; // Ignora il click se si sta trascinando
+			
+			mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+			
+			raycaster.setFromCamera(mouse, camera);
+			
+			// Controlla intersezioni con i libri
+			const bookIntersects = raycaster.intersectObjects(
+					Object.values(bookObjects)
+			);
+			if (bookIntersects.length > 0) {
+			const object = bookIntersects[0].object;
+			const bookId = parseInt(Object.keys(bookObjects).find(
+					id => bookObjects[id] === object
+			));
+			
+			if (bookId) {
+					selectBook(bookId);
 			}
-});
-    
-    // UI Events
-    document.getElementById('addBook').addEventListener('click', showBookForm);
-    document.getElementById('saveBook').addEventListener('click', saveBook);
-    document.getElementById('cancelBook').addEventListener('click', hideBookForm);
-    
-    document.getElementById('addNote').addEventListener('click', showNoteForm);
-    document.getElementById('saveNote').addEventListener('click', saveNote);
-    document.getElementById('cancelNote').addEventListener('click', hideNoteForm);
-    
-    document.getElementById('updateNote').addEventListener('click', updateNote);
-    document.getElementById('deleteNote').addEventListener('click', deleteNote);
-    document.getElementById('cancelEdit').addEventListener('click', hideNoteEditor);
-    
-    document.getElementById('zoomOut').addEventListener('click', zoomOutView);
-    
-    // Importazione dati
-    document.getElementById('importInput').addEventListener('change', importData);
-    
-    // Imposta salvataggio automatico ogni 30 secondi
-    setInterval(saveDataToLocalStorage, 30000);
-    
-    // Popola il select dei libri
-    updateBookSelect();
-    
-    // Se abbiamo caricato dati, zoom out per vedere tutto
-    if (dataLoaded && books.length > 0) {
-        zoomOutView();
-    }
+		} else {
+				// Se non abbiamo cliccato su un libro, resetta la selezione
+				selectedBookId = null;
+		}
+	});
+	
+	// UI Events
+	document.getElementById('addBook').addEventListener('click', showBookForm);
+	document.getElementById('saveBook').addEventListener('click', saveBook);
+	document.getElementById('cancelBook').addEventListener('click', hideBookForm);
+	
+	document.getElementById('addNote').addEventListener('click', showNoteForm);
+	document.getElementById('saveNote').addEventListener('click', saveNote);
+	document.getElementById('cancelNote').addEventListener('click', hideNoteForm);
+	
+	document.getElementById('updateNote').addEventListener('click', updateNote);
+	document.getElementById('deleteNote').addEventListener('click', deleteNote);
+	document.getElementById('cancelEdit').addEventListener('click', hideNoteEditor);
+	
+	document.getElementById('zoomOut').addEventListener('click', zoomOutView);
+	
+	// Importazione dati
+	document.getElementById('importInput').addEventListener('change', importData);
+	
+	// Imposta salvataggio automatico ogni 30 secondi
+	setInterval(saveDataToLocalStorage, 30000);
+	
+	// Popola il select dei libri
+	updateBookSelect();
+	
+	// Se abbiamo caricato dati, zoom out per vedere tutto
+	if (dataLoaded && books.length > 0) {
+			zoomOutView();
+	}
 }
 
 // Crea bottoni per import/export
 function createDataButtons() {
-    const controlsContainer = document.querySelector('.controls') || document.body;
-    
-    // Div per contenere i pulsanti di import/export
-    const dataButtonsDiv = document.createElement('div');
-    dataButtonsDiv.className = 'data-controls';
-    dataButtonsDiv.style.marginTop = '15px';
-    
-    // Bottone Export
-    const exportButton = document.createElement('button');
-    exportButton.id = 'exportData';
-    exportButton.textContent = 'Esporta Dati (JSON)';
-    exportButton.addEventListener('click', exportData);
-    
-    // Bottone Import
-    const importLabel = document.createElement('label');
-    importLabel.className = 'import-label';
-    importLabel.textContent = 'Importa Dati';
-    importLabel.style.padding = '5px 10px';
-    importLabel.style.backgroundColor = '#333';
-    importLabel.style.color = 'white';
-    importLabel.style.borderRadius = '4px';
-    importLabel.style.cursor = 'pointer';
-    importLabel.style.display = 'inline-block';
-    importLabel.style.marginLeft = '10px';
-    
-    const importInput = document.createElement('input');
-    importInput.type = 'file';
-    importInput.id = 'importInput';
-    importInput.accept = '.json';
-    importInput.style.display = 'none';
-    
-    importLabel.appendChild(importInput);
-    
-    // Aggiungi i bottoni al container
-    dataButtonsDiv.appendChild(exportButton);
-    dataButtonsDiv.appendChild(importLabel);
-    controlsContainer.appendChild(dataButtonsDiv);
+	const controlsContainer = document.querySelector('.controls') || document.body;
+	
+	// Div per contenere i pulsanti di import/export
+	const dataButtonsDiv = document.createElement('div');
+	dataButtonsDiv.className = 'data-controls';
+	dataButtonsDiv.style.marginTop = '15px';
+	
+	// Bottone Export
+	const exportButton = document.createElement('button');
+	exportButton.id = 'exportData';
+	exportButton.textContent = 'Esporta Dati (JSON)';
+	exportButton.addEventListener('click', exportData);
+	
+	// Bottone Import
+	const importLabel = document.createElement('label');
+	importLabel.className = 'import-label';
+	importLabel.textContent = 'Importa Dati';
+	importLabel.style.padding = '5px 10px';
+	importLabel.style.backgroundColor = '#333';
+	importLabel.style.color = 'white';
+	importLabel.style.borderRadius = '4px';
+	importLabel.style.cursor = 'pointer';
+	importLabel.style.display = 'inline-block';
+	importLabel.style.marginLeft = '10px';
+	
+	const importInput = document.createElement('input');
+	importInput.type = 'file';
+	importInput.id = 'importInput';
+	importInput.accept = '.json';
+	importInput.style.display = 'none';
+	
+	importLabel.appendChild(importInput);
+	
+	// Aggiungi i bottoni al container
+	dataButtonsDiv.appendChild(exportButton);
+	dataButtonsDiv.appendChild(importLabel);
+	controlsContainer.appendChild(dataButtonsDiv);
 }
 
 // Apri l'editor di note
 function openNoteEditor(note) {
-    document.getElementById('editNoteTitle').textContent = `Modifica: ${note.title}`;
-    document.getElementById('editNoteTitleInput').value = note.title;
-    document.getElementById('editNoteContentInput').value = note.content;
-    document.getElementById('noteEditor').style.display = 'block';
-    currentEditingNoteId = note.id;
+	document.getElementById('editNoteTitle').textContent = `Modifica: ${note.title}`;
+	document.getElementById('editNoteTitleInput').value = note.title;
+	document.getElementById('editNoteContentInput').value = note.content;
+	document.getElementById('noteEditor').style.display = 'block';
+	currentEditingNoteId = note.id;
 }
 
 // Nascondi l'editor di note
@@ -750,62 +729,62 @@ function hideNoteEditor() {
 
 // Aggiorna una nota esistente
 function updateNote() {
-    if (!currentEditingNoteId) return;
-    
-    const note = notes.find(n => n.id === currentEditingNoteId);
-    if (!note) return;
-    
-    const newTitle = document.getElementById('editNoteTitleInput').value.trim();
-    const newContent = document.getElementById('editNoteContentInput').value.trim();
-    
-    if (!newTitle) return;
-    
-    // Aggiorna i dati della nota
-    note.title = newTitle;
-    note.content = newContent;
-    
-    // Aggiorna l'etichetta
-    const noteLabel = noteLabels[note.id];
-    if (noteLabel) {
-        noteLabel.textContent = newTitle;
-    }
-    
-    // Salva i dati aggiornati
-    saveDataToLocalStorage();
-    
-    hideNoteEditor();
+	if (!currentEditingNoteId) return;
+	
+	const note = notes.find(n => n.id === currentEditingNoteId);
+	if (!note) return;
+	
+	const newTitle = document.getElementById('editNoteTitleInput').value.trim();
+	const newContent = document.getElementById('editNoteContentInput').value.trim();
+	
+	if (!newTitle) return;
+	
+	// Aggiorna i dati della nota
+	note.title = newTitle;
+	note.content = newContent;
+	
+	// Aggiorna l'etichetta
+	const noteLabel = noteLabels[note.id];
+	if (noteLabel) {
+			noteLabel.textContent = newTitle;
+	}
+	
+	// Salva i dati aggiornati
+	saveDataToLocalStorage();
+	
+	hideNoteEditor();
 }
 
 // Elimina una nota
 function deleteNote() {
-    if (!currentEditingNoteId) return;
-    
-    // Trova l'indice della nota
-    const noteIndex = notes.findIndex(n => n.id === currentEditingNoteId);
-    if (noteIndex === -1) return;
-    
-    // Rimuovi la linea dalla scena
-    if (lineObjects[currentEditingNoteId]) {
-        scene.remove(lineObjects[currentEditingNoteId]);
-        delete lineObjects[currentEditingNoteId];
-    }
-    
-    // Rimuovi l'etichetta dal DOM
-    if (noteLabels[currentEditingNoteId]) {
-        noteLabels[currentEditingNoteId].remove();
-        delete noteLabels[currentEditingNoteId];
-    }
-    
-    // Rimuovi la posizione
-    delete notePositions[currentEditingNoteId];
-    
-    // Rimuovi la nota dai dati
-    notes.splice(noteIndex, 1);
-    
-    // Salva i dati aggiornati
-    saveDataToLocalStorage();
-    
-    hideNoteEditor();
+	if (!currentEditingNoteId) return;
+	
+	// Trova l'indice della nota
+	const noteIndex = notes.findIndex(n => n.id === currentEditingNoteId);
+	if (noteIndex === -1) return;
+	
+	// Rimuovi la linea dalla scena
+	if (lineObjects[currentEditingNoteId]) {
+			scene.remove(lineObjects[currentEditingNoteId]);
+			delete lineObjects[currentEditingNoteId];
+	}
+	
+	// Rimuovi l'etichetta dal DOM
+	if (noteLabels[currentEditingNoteId]) {
+			noteLabels[currentEditingNoteId].remove();
+			delete noteLabels[currentEditingNoteId];
+	}
+	
+	// Rimuovi la posizione
+	delete notePositions[currentEditingNoteId];
+	
+	// Rimuovi la nota dai dati
+	notes.splice(noteIndex, 1);
+	
+	// Salva i dati aggiornati
+	saveDataToLocalStorage();
+	
+	hideNoteEditor();
 }
 
 // Seleziona un libro
@@ -837,7 +816,8 @@ function selectBook(bookId) {
 	// Aggiorna il timestamp dell'ultimo click
 	lastBookClickTime = currentTime;
 }
-// Funzione per preparare automaticamente il form per l'aggiunta di una nota al libro selezionato
+// Funzione per preparare automaticamente il form 
+// per l'aggiunta di una nota al libro selezionato
 function prepareNoteFormForBook(bookId) {
 	// Trova il libro per il titolo
 	const book = books.find(b => b.id === bookId);
@@ -867,157 +847,157 @@ function prepareNoteFormForBook(bookId) {
 
 // Vista generale
 function zoomOutView() {
-    // Se non ci sono libri, non fare nulla
-    if (books.length === 0) return;
-    
-    // Calcola il centro di tutti i libri
-    let centerX = 0, centerY = 0, centerZ = 0;
-    const bookCount = books.length;
-    
-    books.forEach(book => {
-        centerX += book.position.x;
-        centerY += book.position.y;
-        centerZ += book.position.z;
-    });
-    
-    centerX /= Math.max(1, bookCount);
-    centerY /= Math.max(1, bookCount);
-    centerZ /= Math.max(1, bookCount);
-    
-    // Imposta il target della camera
-    cameraTarget.set(centerX, centerY, centerZ);
-    
-    // Calcola la distanza massima
-    let maxDist = 0;
-    books.forEach(book => {
-        const dx = book.position.x - centerX;
-        const dy = book.position.y - centerY;
-        const dz = book.position.z - centerZ;
-        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-        maxDist = Math.max(maxDist, dist);
-    });
-    
-    // Posiziona la camera
-    const viewDistance = Math.max(30, maxDist * 2.5);
-    camera.position.set(
-        centerX,
-        centerY + viewDistance * 0.7,
-        centerZ + viewDistance
-    );
-    
-    // Guarda verso il centro
-    camera.lookAt(cameraTarget);
+	// Se non ci sono libri, non fare nulla
+	if (books.length === 0) return;
+	
+	// Calcola il centro di tutti i libri
+	let centerX = 0, centerY = 0, centerZ = 0;
+	const bookCount = books.length;
+	
+	books.forEach(book => {
+			centerX += book.position.x;
+			centerY += book.position.y;
+			centerZ += book.position.z;
+	});
+	
+	centerX /= Math.max(1, bookCount);
+	centerY /= Math.max(1, bookCount);
+	centerZ /= Math.max(1, bookCount);
+	
+	// Imposta il target della camera
+	cameraTarget.set(centerX, centerY, centerZ);
+	
+	// Calcola la distanza massima
+	let maxDist = 0;
+	books.forEach(book => {
+			const dx = book.position.x - centerX;
+			const dy = book.position.y - centerY;
+			const dz = book.position.z - centerZ;
+			const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+			maxDist = Math.max(maxDist, dist);
+	});
+	
+	// Posiziona la camera
+	const viewDistance = Math.max(30, maxDist * 2.5);
+	camera.position.set(
+			centerX,
+			centerY + viewDistance * 0.7,
+			centerZ + viewDistance
+	);
+	
+	// Guarda verso il centro
+	camera.lookAt(cameraTarget);
 }
 
 // Form per nuovo libro
 function showBookForm() {
-    document.getElementById('bookForm').style.display = 'block';
-    document.getElementById('bookTitleInput').focus();
+	document.getElementById('bookForm').style.display = 'block';
+	document.getElementById('bookTitleInput').focus();
 }
 
 function hideBookForm() {
-    document.getElementById('bookForm').style.display = 'none';
+	document.getElementById('bookForm').style.display = 'none';
 }
 
 // savebook 
 //
 // Modifica la funzione saveBook() per posizionare i libri in 3D in modo casuale evitando sovrapposizioni
 function saveBook() {
-    const title = document.getElementById('bookTitleInput').value.trim();
-    if (!title) return;
-    
-    let x, y, z;
-    let validPosition = false;
-    let attempts = 0;
-    const maxAttempts = 50; // Limite massimo di tentativi per trovare una posizione valida
-    
-    // Dimensione del libro (raggio) - usata per il controllo delle collisioni
-    const bookRadius = 2.5; // Leggermente più grande del raggio geometrico per garantire un po' di spazio
-    
-    if (books.length === 0) {
-        // Se è il primo libro, lo mettiamo al centro
-        x = 0;
-        y = 0;
-        z = 0;
-        validPosition = true;
-    } else {
-        // Se ci sono già altri libri, tentiamo di trovare una posizione valida
-        while (!validPosition && attempts < maxAttempts) {
-            attempts++;
-            
-            // Usiamo il primo libro come riferimento
-            let referenceBook = books[0];
-            
-            // Raggio minimo e massimo dal punto di riferimento
-            const minRadius = 10;
-            const maxRadius = 25;
-            
-            // Randomizzazione della posizione in 3D vicino al libro di riferimento
-            const radius = minRadius + Math.random() * (maxRadius - minRadius);
-            const theta = Math.random() * Math.PI * 2; // Angolo orizzontale (0-360 gradi)
-            const phi = (Math.random() - 0.5) * Math.PI; // Angolo verticale (-90 a +90 gradi)
-            
-            // Calcola le coordinate cartesiane basate sugli angoli sferici
-            x = referenceBook.position.x + radius * Math.cos(theta) * Math.cos(phi);
-            y = referenceBook.position.y + radius * Math.sin(phi); // Componente verticale
-            z = referenceBook.position.z + radius * Math.sin(theta) * Math.cos(phi);
-            
-            // Controlla sovrapposizioni con tutti i libri esistenti
-            validPosition = true; // Presume che sia valida finché non si trova una sovrapposizione
-            
-            for (const book of books) {
-                // Calcola la distanza tra la nuova posizione e il libro esistente
-                const dx = x - book.position.x;
-                const dy = y - book.position.y;
-                const dz = z - book.position.z;
-                const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
-                
-                // Se la distanza è minore della somma dei raggi, c'è sovrapposizione
-                if (distance < bookRadius * 2) {
-                    validPosition = false;
-                    break;
-                }
-            }
-        }
-        
-        // Se non si trova una posizione valida dopo molti tentativi, avvisa l'utente
-        if (!validPosition) {
-            console.warn("Non è stato possibile trovare una posizione senza sovrapposizioni dopo", maxAttempts, "tentativi");
-            // Usiamo comunque l'ultima posizione generata, anche se potrebbe sovrapporsi
-        }
-    }
-    
-    const newBook = {
-        id: books.length > 0 ? Math.max(...books.map(b => b.id)) + 1 : 1,
-        title: title,
-        color: Math.random() * 0xffffff,
-        position: { x, y, z }
-    };
-    
-    books.push(newBook);
-    createBook(newBook);
-    updateBookSelect();
-    hideBookForm();
-    
-    // Salva i dati aggiornati
-    saveDataToLocalStorage();
-    
-    // Reset input
-    document.getElementById('bookTitleInput').value = '';
-    
-    // Zoom out to see all books
-    zoomOutView();
+	const title = document.getElementById('bookTitleInput').value.trim();
+	if (!title) return;
+	
+	let x, y, z;
+	let validPosition = false;
+	let attempts = 0;
+	const maxAttempts = 50; // Limite massimo di tentativi per trovare una posizione valida
+	
+	// Dimensione del libro (raggio) - usata per il controllo delle collisioni
+	const bookRadius = 2.5; // Leggermente più grande del raggio geometrico per garantire un po' di spazio
+	
+	if (books.length === 0) {
+			// Se è il primo libro, lo mettiamo al centro
+			x = 0;
+			y = 0;
+			z = 0;
+			validPosition = true;
+	} else {
+			// Se ci sono già altri libri, tentiamo di trovare una posizione valida
+			while (!validPosition && attempts < maxAttempts) {
+				attempts++;
+				
+				// Usiamo il primo libro come riferimento
+				let referenceBook = books[0];
+				
+				// Raggio minimo e massimo dal punto di riferimento
+				const minRadius = 10;
+				const maxRadius = 25;
+				
+				// Randomizzazione della posizione in 3D vicino al libro di riferimento
+				const radius = minRadius + Math.random() * (maxRadius - minRadius);
+				const theta = Math.random() * Math.PI * 2; // Angolo orizzontale (0-360 gradi)
+				const phi = (Math.random() - 0.5) * Math.PI; // Angolo verticale (-90 a +90 gradi)
+				
+				// Calcola le coordinate cartesiane basate sugli angoli sferici
+				x = referenceBook.position.x + radius * Math.cos(theta) * Math.cos(phi);
+				y = referenceBook.position.y + radius * Math.sin(phi); // Componente verticale
+				z = referenceBook.position.z + radius * Math.sin(theta) * Math.cos(phi);
+				
+				// Controlla sovrapposizioni con tutti i libri esistenti
+				validPosition = true; // Presume che sia valida finché non si trova una sovrapposizione
+				
+				for (const book of books) {
+						// Calcola la distanza tra la nuova posizione e il libro esistente
+						const dx = x - book.position.x;
+						const dy = y - book.position.y;
+						const dz = z - book.position.z;
+						const distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+						
+						// Se la distanza è minore della somma dei raggi, c'è sovrapposizione
+						if (distance < bookRadius * 2) {
+								validPosition = false;
+								break;
+						}
+				}
+			}
+			
+			// Se non si trova una posizione valida dopo molti tentativi, avvisa l'utente
+			if (!validPosition) {
+					console.warn("Non è stato possibile trovare una posizione senza sovrapposizioni dopo", maxAttempts, "tentativi");
+					// Usiamo comunque l'ultima posizione generata, anche se potrebbe sovrapporsi
+			}
+	}
+	
+	const newBook = {
+			id: books.length > 0 ? Math.max(...books.map(b => b.id)) + 1 : 1,
+			title: title,
+			color: Math.random() * 0xffffff,
+			position: { x, y, z }
+	};
+	
+	books.push(newBook);
+	createBook(newBook);
+	updateBookSelect();
+	hideBookForm();
+	
+	// Salva i dati aggiornati
+	saveDataToLocalStorage();
+	
+	// Reset input
+	document.getElementById('bookTitleInput').value = '';
+	
+	// Zoom out to see all books
+	zoomOutView();
 }
 
 // Form per nuova nota
 function showNoteForm() {
-    if (books.length === 0) {
-        alert('Crea prima un libro!');
-        return;
-    }
-    
-    document.getElementById('noteForm').style.display = 'block';
-    document.getElementById('noteTitleInput').focus();
+	if (books.length === 0) {
+			alert('Crea prima un libro!');
+			return;
+	}
+	
+	document.getElementById('noteForm').style.display = 'block';
+	document.getElementById('noteTitleInput').focus();
 }
 
 function hideNoteForm() {
@@ -1025,84 +1005,84 @@ function hideNoteForm() {
 }
 
 function saveNote() {
-    const bookId = parseInt(document.getElementById('bookSelect').value);
-    const title = document.getElementById('noteTitleInput').value.trim();
-    const content = document.getElementById('noteContentInput').value.trim();
-    
-    if (!title) return;
-    
-    const newNote = {
-        id: notes.length > 0 ? Math.max(...notes.map(n => n.id)) + 1 : 1,
-        bookId: bookId,
-        title: title,
-        content: content,
-        color: Math.random() * 0xffffff,
-        orbit: {
-            radius: 5 + Math.random() * 5,
-            speed: 0.0005 + Math.random() * 0.0015,
-            angle: Math.random() * Math.PI * 2
-        }
-    };
-    
-    notes.push(newNote);
-    createNote(newNote);
-    hideNoteForm();
-    
-    // Salva i dati aggiornati
-    saveDataToLocalStorage();
-    
-    // Reset inputs
-    document.getElementById('noteTitleInput').value = '';
-    document.getElementById('noteContentInput').value = '';
-    
-    // Zoom sul libro
-    setTimeout(() => {
-        selectBook(bookId);
-    }, 100);
+	const bookId = parseInt(document.getElementById('bookSelect').value);
+	const title = document.getElementById('noteTitleInput').value.trim();
+	const content = document.getElementById('noteContentInput').value.trim();
+	
+	if (!title) return;
+	
+	const newNote = {
+			id: notes.length > 0 ? Math.max(...notes.map(n => n.id)) + 1 : 1,
+			bookId: bookId,
+			title: title,
+			content: content,
+			color: Math.random() * 0xffffff,
+			orbit: {
+					radius: 5 + Math.random() * 5,
+					speed: 0.0005 + Math.random() * 0.0015,
+					angle: Math.random() * Math.PI * 2
+			}
+	};
+	
+	notes.push(newNote);
+	createNote(newNote);
+	hideNoteForm();
+	
+	// Salva i dati aggiornati
+	saveDataToLocalStorage();
+	
+	// Reset inputs
+	document.getElementById('noteTitleInput').value = '';
+	document.getElementById('noteContentInput').value = '';
+	
+	// Zoom sul libro
+	setTimeout(() => {
+			selectBook(bookId);
+	}, 100);
 }
 
 // Aggiorna la lista dei libri nel select
 function updateBookSelect() {
-    const select = document.getElementById('bookSelect');
-    select.innerHTML = '';
-    
-    books.forEach(book => {
-        const option = document.createElement('option');
-        option.value = book.id;
-        option.textContent = book.title;
-        select.appendChild(option);
-    });
+	const select = document.getElementById('bookSelect');
+	select.innerHTML = '';
+	
+	books.forEach(book => {
+		const option = document.createElement('option');
+		option.value = book.id;
+		option.textContent = book.title;
+		select.appendChild(option);
+	});
 }
 
 // Gestione del ridimensionamento della finestra
 function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
 // Loop di animazione
 function animate() {
-    requestAnimationFrame(animate);
-    
-    // Aggiorna posizioni delle note
-    updateNotePositions();
-    
-    // Aggiorna le linee
-    updateLines();
-    
-    // Aggiorna le etichette
-    updateLabels();
-     
-    // Rotazione leggera dei libri
-    for (const bookId in bookObjects) {
-        bookObjects[bookId].rotation.y += 0.005;
-    }
-        // Animazione delle stelle - rotazione molto lenta
-    if (starsBackground && starsBackground.visible) {
-        starsBackground.rotation.y += 0.0001;
-    }
-    renderer.render(scene, camera);
+	requestAnimationFrame(animate);
+	
+	// Aggiorna posizioni delle note
+	updateNotePositions();
+	
+	// Aggiorna le linee
+	updateLines();
+	
+	// Aggiorna le etichette
+	updateLabels();
+	 
+	// Rotazione leggera dei libri
+	for (const bookId in bookObjects) {
+			bookObjects[bookId].rotation.y += 0.005;
+	}
+			// Animazione delle stelle - rotazione molto lenta
+	if (starsBackground && starsBackground.visible) {
+			starsBackground.rotation.y += 0.0001;
+	}
+	renderer.render(scene, camera);
 }
 
 // Aggiungi CSS per mostrare quando il mouse può trascinare
