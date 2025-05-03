@@ -8,52 +8,52 @@
 
  <link rel="stylesheet" href="./css/style.css">
 <body>
-    <div id="ui">
-        <button id="addBook">Nuovo Libro</button>
-        <button id="addNote">Aggiungi Nota</button>
-        <button id="zoomOut">Vista Globale</button>
-    </div>
+	<div id="ui">
+			<button id="addBook">Nuovo Libro</button>
+			<button id="addNote">Aggiungi Nota</button>
+			<button id="zoomOut">Vista Globale</button>
+	</div>
 
-		<div class="starfield-toggle">
-			<label class="label-toggle">Stelle</label>
-			<div class="toggle-switch">
-				<div class="toggle-slider"></div>
-			</div>
+	<div class="starfield-toggle">
+		<label class="label-toggle">Stelle</label>
+		<div class="toggle-switch">
+			<div class="toggle-slider"></div>
 		</div>
-    
-    <div id="bookForm">
-        <h3>Nuovo Libro</h3>
-        <input type="text" id="bookTitleInput" placeholder="Titolo del libro">
-        <div class="form-buttons">
-            <button id="cancelBook">Annulla</button>
-            <button id="saveBook">Salva</button>
-        </div>
-    </div>
-    
-    <div id="noteForm">
-        <h3>Nuova Nota</h3>
-        <select id="bookSelect">
-        </select>
-        <input type="text" id="noteTitleInput" placeholder="Titolo della nota">
-        <textarea id="noteContentInput" placeholder="Contenuto della nota" rows="4"></textarea>
-        <div class="form-buttons">
-            <button id="cancelNote">Annulla</button>
-            <button id="saveNote">Salva</button>
-        </div>
-    </div>
-    
-    <div id="noteEditor">
-        <h3 id="editNoteTitle">Modifica Nota</h3>
-        <input type="text" id="editNoteTitleInput" placeholder="Titolo della nota">
-        <textarea id="editNoteContentInput" placeholder="Contenuto della nota" rows="6"></textarea>
-        <div class="form-buttons">
-            <button id="deleteNote">Elimina</button>
-            <button id="cancelEdit">Annulla</button>
-            <button id="updateNote">Salva</button>
-        </div>
-    </div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="./js/main.js"></script>
+	</div>
+	
+	<div id="bookForm">
+			<h3>Nuovo Libro</h3>
+			<input type="text" id="bookTitleInput" placeholder="Titolo del libro">
+			<div class="form-buttons">
+					<button id="cancelBook">Annulla</button>
+					<button id="saveBook">Salva</button>
+			</div>
+	</div>
+	
+	<div id="noteForm">
+			<h3>Nuova Nota</h3>
+			<select id="bookSelect">
+			</select>
+			<input type="text" id="noteTitleInput" placeholder="Titolo della nota">
+			<textarea id="noteContentInput" placeholder="Contenuto della nota" rows="4"></textarea>
+			<div class="form-buttons">
+					<button id="cancelNote">Annulla</button>
+					<button id="saveNote">Salva</button>
+			</div>
+	</div>
+	
+	<div id="noteEditor">
+			<h3 id="editNoteTitle">Modifica Nota</h3>
+			<input type="text" id="editNoteTitleInput" placeholder="Titolo della nota">
+			<textarea id="editNoteContentInput" placeholder="Contenuto della nota" rows="6"></textarea>
+			<div class="form-buttons">
+					<button id="deleteNote">Elimina</button>
+					<button id="cancelEdit">Annulla</button>
+					<button id="updateNote">Salva</button>
+			</div>
+	</div>
+	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+	<script src="./js/main.js"></script>
 </body>
 </html>

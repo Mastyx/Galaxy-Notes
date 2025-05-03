@@ -1085,6 +1085,17 @@ function animate() {
 	renderer.render(scene, camera);
 }
 
+// funzione per eliminare books e note associate
+const deleteBook = (bookId)=> {
+	if (!confirm(`Sei sicuro di eliminare il book e le note associate ?`)) {
+		return;
+	}
+}
+
+
+
+
+
 // Aggiungi CSS per mostrare quando il mouse può trascinare
 document.head.insertAdjacentHTML('beforeend', `
 <style>
