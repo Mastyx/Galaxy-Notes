@@ -658,7 +658,9 @@ function init() {
 	
 	// Importazione dati
 	document.getElementById('importInput').addEventListener('change', importData);
-	
+
+	addBookEditorEventListeners()
+
 	// Imposta salvataggio automatico ogni 30 secondi
 	setInterval(saveDataToLocalStorage, 30000);
 	
@@ -670,6 +672,20 @@ function init() {
 			zoomOutView();
 	}
 }
+		// Aggiungi questi event listener nella funzione init()
+function addBookEditorEventListeners() {
+		document.getElementById('updateBook').addEventListener('click', updateBook);
+		document.getElementById('deleteBook').addEventListener('click', function() {
+				const bookId = parseInt(document.getElementById('bookEditor').dataset.bookId);
+				if (bookId) {
+						deleteBook(bookId);
+				}
+		});
+		document.getElementById('cancelEditBook').addEventListener('click', hideBookEditor);
+}
+
+
+
 
 // Crea bottoni per import/export
 function createDataButtons() {
@@ -790,11 +806,16 @@ function deleteNote() {
 // Seleziona un libro
 function selectBook(bookId) {
 	const currentTime = new Date().getTime();
-    
-	// Se è lo stesso libro già selezionato e il click avviene entro un certo tempo (1.5 secondi)
-	if (bookId === selectedBookId && (currentTime - lastBookClickTime < 1500)) {
+   if (bookId === selectedBookId && (currentTime - lastBookClickTime < 1500)) {
 			// Prepara il form per aggiungere una nuova nota a questo libro
-			prepareNoteFormForBook(bookId);
+			prepareNoteFormForBook(bookId); 	
+	// Se è lo stesso libro già selezionato e il click avviene entro un certo tempo (1.5 secondi)
+	 } else if (bookId === selectedBookId && (currentTime - lastBookClickTime > 1500)) {
+			// Doppio click: apri l'editor del libro invece di una nota
+			const book = books.find(b => b.id === bookId);
+			if (book) {
+					showBookEditor(book);
+			}
 	} else {
 			// Primo click o click su libro diverso: seleziona il libro e zoom
 			selectedBookId = bookId;
@@ -1085,11 +1106,101 @@ function animate() {
 	renderer.render(scene, camera);
 }
 
+
+
 // funzione per eliminare books e note associate
 const deleteBook = (bookId)=> {
 	if (!confirm(`Sei sicuro di eliminare il book e le note associate ?`)) {
 		return;
 	}
+	// trova l'indice del Libro
+	const bookIndex = books.findIndex(b => b.id === bookId);
+	if (bookIndex === -1) return;
+	//ottieni il libro 
+	const book = books[bookIndex];
+	// trova tutte le note associata al book
+	const notesToDelete = notes.filter(note => note.bookId === bookId);
+	
+	//per ogni nota del libro 
+	notesToDelete.forEach(note => {
+		//rimozione delle linee di collegamento
+		if (lineObjects[note.id]) {
+			scene.remove(lineObjects[note.id]);
+			delete lineObjects[note.id];
+		}
+		//rimozione etichetta dom 
+		if (noteLabels[note.id]) {
+			noteLabels[note.id].remove();
+			delete noteLabels[note.id];
+		}
+		delete notePositions[note.id];
+	});
+	
+	// rimuovi il libro dalla scena
+	if (bookObjects[bookId]) {
+		scene.remove(bookObjects[bookId]);
+		delete bookObjects[bookId];
+	}
+	// rimuovi le note della array 
+	notes = notes.filter(note=>note.bookId !== bookId);
+	//rimuovi book dall'array 
+	books.splice(bookIndex, 1);
+	// salva i dati aggiornati
+	saveDataToLocalStorage();
+	//aggiorna select 
+	updateBookSelect();
+	// zoom out 
+	zoomOutView();
+	// chiudi editor
+	hideBookEditor();
+}
+// Funzione per mostrare l'editor del libro
+function showBookEditor(book) {
+    document.getElementById('editBookTitle').textContent = `Modifica: ${book.title}`;
+    document.getElementById('editBookTitleInput').value = book.title;
+    document.getElementById('bookEditor').style.display = 'block';
+    
+    // Memorizza l'ID del libro che stiamo modificando
+    document.getElementById('bookEditor').dataset.bookId = book.id;
+}
+
+// Funzione per nascondere l'editor del libro
+function hideBookEditor() {
+    document.getElementById('bookEditor').style.display = 'none';
+    document.getElementById('bookEditor').dataset.bookId = '';
+}
+
+// Funzione per aggiornare il titolo di un libro esistente
+function updateBook() {
+    // Ottieni l'ID del libro da modificare
+    const bookId = parseInt(document.getElementById('bookEditor').dataset.bookId);
+    if (!bookId) return;
+    
+    // Trova il libro
+    const book = books.find(b => b.id === bookId);
+    if (!book) return;
+    
+    // Ottieni il nuovo titolo
+    const newTitle = document.getElementById('editBookTitleInput').value.trim();
+    if (!newTitle) return;
+    
+    // Aggiorna il titolo del libro
+    book.title = newTitle;
+    
+    // Aggiorna l'etichetta del libro
+    const bookLabel = bookLabels[book.id];
+    if (bookLabel) {
+        bookLabel.textContent = newTitle;
+    }
+    
+    // Salva i dati aggiornati
+    saveDataToLocalStorage();
+    
+    // Aggiorna il select dei libri
+    updateBookSelect();
+    
+    // Nascondi l'editor
+    hideBookEditor();
 }
 
 

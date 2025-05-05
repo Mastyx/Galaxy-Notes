@@ -132,3 +132,34 @@ input, textarea, select {
     text-shadow: 0 0 8px white, 0 0 4px white;
 }
 
+#bookEditor {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border-radius: 8px;
+    z-index: 200;
+    width: 60%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+#bookEditor input, 
+#bookEditor textarea, 
+#bookEditor select,
+#bookEditor button {
+    margin-bottom: 10px;
+}
+
+/* Stili per il pulsante di elimina (più prominente) */
+#deleteBook {
+    background-color: #f44336;
+}
+
+#deleteBook:hover {
+    background-color: #d32f2f;
+}
