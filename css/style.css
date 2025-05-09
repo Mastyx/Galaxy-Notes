@@ -120,6 +120,7 @@ input, textarea, select {
     font-weight: bold;
     text-shadow: 0 0 4px black, 0 0 4px black, 0 0 4px black, 0 0 4px black;
 }
+
 .note-label {
     font-size: 12px;
     color: white;
