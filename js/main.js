@@ -853,9 +853,9 @@ function deleteNote() {
 
 // Seleziona un libro
 function selectBook(bookId) {
-
+	const currentTime = new Date().getTime();
 	// gestion click sinistro
-	if(bookId === selectedBookId) {
+	if(bookId === selectedBookId && (currentTime - lastBookClickTime < 1500)) {
 		prepareNoteFormForBook(bookId);
 	} else {
 		selectedBookId = bookId;
@@ -869,7 +869,7 @@ function selectBook(bookId) {
 		// guardare verso il book 
 		camera.lookAt(cameraTarget);
 	} 
-
+	lastBookClickTime = currentTime;
 }
 // Funzione per preparare automaticamente il form 
 // per l'aggiunta di una nota al libro selezionato
