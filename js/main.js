@@ -153,7 +153,7 @@ function createStarfield() {
 	brightStarsGeometry.setAttribute('position', new THREE.BufferAttribute(brightPositions, 3));
 	brightStarsGeometry.setAttribute('size', new THREE.BufferAttribute(brightSizes, 1));
 	const brightStarsMaterial = new THREE.PointsMaterial({
-			color: 0xffffff,
+		color: 0xffffff,
 			size: 1.5,
 			transparent: true,
 			opacity: 0.9,
@@ -640,6 +640,58 @@ function init() {
 				selectedBookId = null;
 		}
 	});
+
+	// intercettare l'evento click tasto destro del mouse
+	renderer.domElement.addEventListener('contextmenu', (event)=> {
+	// Debug generale - questo dovrebbe sempre apparire quando fai click destro sul canvas
+		console.log('Event contextmenu attivato', event.clientX, event.clientY);
+		
+		// Prevenire il menu contestuale del browser
+		event.preventDefault();
+		event.stopPropagation();
+			// Calcola le coordinate del mouse normalizzate
+		mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+		mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+		console.log('Coordinate mouse normalizzate:', mouse.x, mouse.y);
+		
+		raycaster.setFromCamera(mouse, camera);
+		
+		// Controlla intersezioni con i libri
+		const bookIntersects = raycaster.intersectObjects(
+				Object.values(bookObjects)
+		);
+		
+		console.log('Intersezioni trovate:', bookIntersects.length);
+		
+		if (bookIntersects.length > 0) {
+				const object = bookIntersects[0].object;
+				console.log('Oggetto intersecato:', object);
+				
+				// Verifica se abbiamo oggetti in bookObjects
+				console.log('Numero di bookObjects:', Object.keys(bookObjects).length);
+				
+				const bookId = parseInt(Object.keys(bookObjects).find(
+						id => bookObjects[id] === object
+				));
+				
+				console.log('Book ID trovato:', bookId);
+				
+				if (bookId) {
+						console.log('Click destro su book ID:', bookId);
+						const book = books.find(b => b.id === bookId);
+						console.log('Book trovato:', book);
+						
+						if (book) {
+								console.log('Apro editor per libro:', book.title);
+								showBookEditor(book);
+						}
+				}
+		} else {
+				console.log('Nessun libro intersecato dal click destro');
+		}
+	});
+
+
 	
 	// UI Events
 	document.getElementById('addBook').addEventListener('click', showBookForm);
@@ -805,37 +857,23 @@ function deleteNote() {
 
 // Seleziona un libro
 function selectBook(bookId) {
-	const currentTime = new Date().getTime();
-   if (bookId === selectedBookId && (currentTime - lastBookClickTime < 1500)) {
-			// Prepara il form per aggiungere una nuova nota a questo libro
-			prepareNoteFormForBook(bookId); 	
-	// Se è lo stesso libro già selezionato e il click avviene entro un certo tempo (1.5 secondi)
-	 } else if (bookId === selectedBookId && (currentTime - lastBookClickTime > 1500)) {
-			// Doppio click: apri l'editor del libro invece di una nota
-			const book = books.find(b => b.id === bookId);
-			if (book) {
-					showBookEditor(book);
-			}
+
+	// gestion click sinistro
+	if(bookId === selectedBookId) {
+		prepareNoteFormForBook(bookId);
 	} else {
-			// Primo click o click su libro diverso: seleziona il libro e zoom
-			selectedBookId = bookId;
-			
-			const bookMesh = bookObjects[bookId];
-			
-			// Imposta il target della camera
-			cameraTarget.copy(bookMesh.position);
-			
-			// Zoom sul libro
-			const distance = 10;
-			const direction = new THREE.Vector3(0, 0, 1).normalize();
-			camera.position.copy(cameraTarget).addScaledVector(direction, distance);
-			
-			// Guarda verso il libro
-			camera.lookAt(cameraTarget);
-	}
-	
-	// Aggiorna il timestamp dell'ultimo click
-	lastBookClickTime = currentTime;
+		selectedBookId = bookId;
+		const bookMesh = bookObjects[bookId];
+		// imposta il target della camera
+		cameraTarget.copy(bookMesh.position);
+		// zoom libro 
+		const distance = 10;
+		const direction = new THREE.Vector3(0, 0, 1).normalize();
+		camera.position.copy(cameraTarget).addScaledVector(direction, distance);
+		// guardare verso il book 
+		camera.lookAt(cameraTarget);
+	} 
+
 }
 // Funzione per preparare automaticamente il form 
 // per l'aggiunta di una nota al libro selezionato
