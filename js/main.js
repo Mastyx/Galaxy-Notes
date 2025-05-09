@@ -666,16 +666,12 @@ function init() {
 		if (bookIntersects.length > 0) {
 				const object = bookIntersects[0].object;
 				console.log('Oggetto intersecato:', object);
-				
 				// Verifica se abbiamo oggetti in bookObjects
 				console.log('Numero di bookObjects:', Object.keys(bookObjects).length);
-				
 				const bookId = parseInt(Object.keys(bookObjects).find(
 						id => bookObjects[id] === object
 				));
-				
 				console.log('Book ID trovato:', bookId);
-				
 				if (bookId) {
 						console.log('Click destro su book ID:', bookId);
 						const book = books.find(b => b.id === bookId);
